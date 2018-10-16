@@ -4,6 +4,7 @@ Adaptive Bitrate Broadcaster can be installed in Linux or macOS.
 
 The following softwares needs to be installed for Adaptive Bitrate Broadcaster to run properly
 - Xcode (only for macOS users)
+- V4L Utils and Libasound (only for Linux users)
 - Python 2.7.x
 - Python modules - mod_wsgi, webapp2, webob, psutil
 - libx264
@@ -22,6 +23,14 @@ $ xcode-select -p
 ```
 
 If the above command returns ``/Applications/Xcode.app/Contents/Developer`` then it means the Xcode installation in successful.
+
+## V4L Utils and Libasound (Linux only)
+
+Install the V4L Utils and Libasound with the following command.
+
+```bash
+sudo apt install v4l-utils libasound-dev
+```
 
 ## Python
 
@@ -106,7 +115,7 @@ make -j4
 sudo make install
 ```
 
-Alternative on Ubuntu platforms x264 can be installed easily with the following command.
+Alternatively on Ubuntu platforms x264 can be installed easily with the following command.
 
 ```bash
 sudo apt install libx264-dev
@@ -147,6 +156,13 @@ macOS comes preinstalled with Apache2. On Linux apache2 can be installed with th
 
 ```bash
 sudo apt install apache2 libapache2-mod-wsgi
+```
+
+Add apache2's user `www-data` to video and audio group so that it has permissions to access AV capture devices. Run the following commands to achieve the same
+
+```bash
+sudo adduser www-data video
+sudo adduser www-data audio
 ```
 
 ## Enable Virtual Hosts (macOS only)
@@ -231,8 +247,14 @@ NOTE: If you are using any kind of VPN in your machine, it is recommended to dis
 
 ## Restart Apache2 (macOS and Linux)
 
-Run the following command to restart Apache2 server
+In macOS run the following command to restart Apache2 server
 
 ```bash
 sudo apachectl restart
+```
+
+In Ubuntu run the following command to restart Apache2 server
+
+```bash
+sudo service apache2 reload
 ```
