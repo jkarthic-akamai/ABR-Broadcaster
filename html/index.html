@@ -1,0 +1,1027 @@
+<!--  Copyright (c) 2018, Akamai Technologies 
+
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+-->
+<html>
+<head>
+  <title>Adaptive Bitrate Broadcaster</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+  <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+  <script>
+
+    function show_out_specific_fields() {
+        if (document.getElementById("out_type").value == "HLS") {
+            $("#muxed_av_specific_input").show();
+            $("#enable_abs_seg_path_specific_input").show();
+            $("#chunk_specific_input").hide();
+            $("#disable_bframes").show();
+        } else if ((document.getElementById("out_type").value == "DASH") ||
+                   (document.getElementById("out_type").value == "CMAF")) {
+            $("#muxed_av_specific_input").hide();
+            $("#enable_abs_seg_path_specific_input").hide();
+            $("#chunk_specific_input").show();
+            display_disable_bframes_option();
+        }
+        show_backurl_url()
+	}
+  function show_abs_seg_path_base_url() {
+    if (document.getElementsByName("enable_abs_seg_path")[0].checked == true) {
+      $("#abs_seg_path_base_url_specific_input").show();
+    } else {
+      $("#abs_seg_path_base_url_specific_input").hide();
+    }
+  }
+  function set_width_height_display(sub_stream_id) {
+      var i = sub_stream_id
+      if (document.getElementById('vid_out_res' + i).value != "Custom") {
+        document.getElementById('video_width' + i).disabled = true;
+        document.getElementById('video_height' + i).disabled = true;
+      } else {
+        document.getElementById('video_width' + i).disabled = false;
+        document.getElementById('video_height' + i).disabled = false;
+      }
+  }
+  function set_width_height_values() {
+      var i = this.sub_stream_id
+      var sdi_id = document.getElementById("sdi_id").value;
+      var table = document.getElementById("status_table");
+      var config = JSON.parse(table.rows[parseInt(sdi_id) + 1].getAttribute("data-config"))
+      if (this.value == "1080p") {
+        document.getElementById('video_width' + i).value = "1920";
+        document.getElementById('video_height' + i).value = "1080";
+      } else if (this.value == "720p") {
+        document.getElementById('video_width' + i).value = "1280";
+        document.getElementById('video_height' + i).value = "720";
+      } else if (this.value == "480p") {
+        document.getElementById('video_width' + i).value = "720";
+        document.getElementById('video_height' + i).value = "480";
+      } else if (this.value == "360p") {
+        document.getElementById('video_width' + i).value = "640";
+        document.getElementById('video_height' + i).value = "360";
+      } else if (this.value == "240p") {
+        document.getElementById('video_width' + i).value = "426";
+        document.getElementById('video_height' + i).value = "240";
+      } else if (this.value == "Same as input") {
+        document.getElementById('video_width' + i).value = config.input.width;
+        document.getElementById('video_height' + i).value = config.input.height;
+      } else if (this.value == "Custom") {
+        document.getElementById('video_width' + i).value = "";
+        document.getElementById('video_height' + i).value = "";
+      }
+      set_width_height_display(i);
+  }
+function get_resolution(width, height) {
+    if (width == "1920" && height == "1080")
+      return "1080p";
+    else if (width == "1280" && height == "720")
+      return "720p";
+    else if (width == "640" && height == "360")
+      return "360p";
+    else if (width == "426" && height == "240")
+      return "240p";
+    else if (width == "-1" && height == "-1")
+      return "Same as input";
+    else
+      return "Custom";
+  }
+  function display_disable_bframes_option() {
+    if (document.getElementsByName("dash_chunked")[0].checked == true) {
+      $("#disable_bframes").hide();
+    } else {
+      $("#disable_bframes").show();
+    }
+  }
+  function show_backurl_url() {
+    var id = [];
+    if ((document.getElementById("out_type").value == "HLS") ||
+        (document.getElementById("out_type").value == "DASH") ||
+        (document.getElementById("out_type").value == "CMAF")) {
+      id.push("b_ingest")
+    }
+
+    for (i = 0; i < id.length; i++) {
+      if (document.getElementsByName("set_backup_url")[0].checked == true) {
+        document.getElementById(id[i]).style.display = "";
+      } else {
+        document.getElementById(id[i]).style.display = "none";
+      }
+    }
+  }
+	function add_new_cell(row, index, value) {
+        cell = row.insertCell(index);
+        cell.setAttribute("style", "vertical-align:middle");
+        cell.style.textAlign = 'left';
+        cell.innerHTML = value;
+	}
+	function populate_table() {
+        var xhttp = new XMLHttpRequest();
+        xhttp.onreadystatechange = function() {
+            if (this.readyState == 4 && this.status == 200) {
+                var jsonData = this.responseText;
+                var all_devices = JSON.parse(jsonData);
+                var num_devices = all_devices.devices.length
+
+                // Deleting all rows expect 1st row with table info
+                var table = document.getElementById("status_table");
+                while (table.rows.length > 1) {
+                  table.deleteRow(1);
+                }
+
+                var i = 0;
+                while (i < num_devices + 1) {
+                    var vid_br = ''
+                    var aud_br = ''
+                    var vid_res = ''
+                    var inp_id = table.rows.length ;
+                    var inp_src_info = '';
+                    var out_type = '';
+                    var segment_size = '';
+                    var output_url = ''
+                    var status = '';
+                    var button_str = '';
+
+                    var rowdata = get_dev_info(all_devices, inp_id - 1);
+                    var row = table.insertRow(table.rows.length);
+                    row.style.display = '';
+
+                    if (rowdata != null) {
+                      i += 1;
+                      if (rowdata.input.input_interface.indexOf('v4l2') != -1) {
+                        inp_src_info += 'v4l2 device: <br /> ';
+                      } else if (rowdata.input.input_interface.indexOf('decklink') != -1) {
+                        inp_src_info += 'Decklink: ' + rowdata.input.input_url + '<br /> ';
+                      } else if (rowdata.input.input_interface.indexOf('aja') != -1) {
+                        inp_src_info += 'Aja: ' + rowdata.input.input_url + '<br /> ';
+                      } else {
+                        inp_src_info += rowdata.input.input_interface + ': ' + rowdata.input.input_url + '<br /> ';
+                      }
+
+                     if (rowdata.input.status == 'Active')
+                        inp_src_info += rowdata.input.width + 'x' + rowdata.input.height +
+                                        rowdata.input.scantype + ' @ ' + rowdata.input.framerate + 'fps'
+                     else
+                        inp_src_info += rowdata.input.status
+
+                     if (inp_src_info.indexOf('Device open error') != -1) {
+                       //Hide the row
+                       row.style.display = 'none';
+                     }
+                      row.setAttribute("data-config", JSON.stringify(rowdata, null, 4));
+                      for (sub_stream_id = 0; sub_stream_id < rowdata.video.variants.length; sub_stream_id++) {
+                        vid_br += rowdata.video.variants[sub_stream_id].bitrate
+                        if ('-1' == rowdata.video.variants[sub_stream_id].video_width ||
+                            '-1' == rowdata.video.variants[sub_stream_id].video_height) {
+                          vid_res += rowdata.input.width + 'x' + rowdata.input.height
+                        } else {
+                          vid_res += rowdata.video.variants[sub_stream_id].video_width + 'x' +
+                                     rowdata.video.variants[sub_stream_id].video_height
+                        }
+                        var aud_tag = rowdata.video.variants[sub_stream_id].audio_tag
+                        aud_br += rowdata.audio[aud_tag].bitrate
+                        if (sub_stream_id < (rowdata.video.variants.length - 1)) {
+                          vid_br += ', <br /> '
+                          aud_br += ', <br /> '
+                          vid_res += ', <br /> '
+                        }
+                      }
+
+                      out_type = rowdata.output.out_type;
+                      segment_size = rowdata.output.segment_size;
+                      status = rowdata.status
+                      output_url = rowdata.output.ingest_url
+
+                      button_str = '<button type="button" style="margin-top:7px;margin-left:7px" onclick="edit_instance(this)" class="btn btn-info btn-lg" data-toggle="modal" data-target="#myModal">Edit</button>';
+                      if (rowdata.status == "Active") {
+                        button_str = button_str + '<button type="button" style="margin-top:7px;margin-left:7px" onclick="stop_instance(this)" class="btn btn-info btn-lg">Stop</button>';
+                      }
+
+                      if (rowdata.input.input_interface.indexOf('URL') != -1) {
+                        button_str = button_str + '<button type="button" style="margin-top:7px;margin-left:7px;font-size:15px" onclick="remove_input(this)" class="btn btn-info btn-lg">Remove Input</button>';
+                      }
+                    }
+                    else if (i == num_devices) {
+                      i += 1;
+                      button_str = '<button type="button" style="margin-top:7px;margin-left:7px;font-size:15px" class="btn btn-info btn-lg" data-toggle="modal" data-target="#add_input_modal">Add Input</button>';
+                    } else {
+                      // Hide the row with no input_id info
+                      row.style.display = 'none';
+                    }
+                    add_new_cell(row, 0, inp_id);
+                    add_new_cell(row, 1, inp_src_info);
+                    add_new_cell(row, 2, vid_br);
+                    add_new_cell(row, 3, vid_res);
+                    add_new_cell(row, 4, aud_br);
+                    add_new_cell(row, 5, out_type);
+                    add_new_cell(row, 6, output_url);
+                    add_new_cell(row, 7, segment_size);
+                    add_new_cell(row, 8, status);
+                    add_new_cell(row, 9, button_str);
+                }
+            }
+        };
+        var url = "/broadcaster/";
+        xhttp.open("GET", url, true);
+        xhttp.send();
+	}
+
+  function get_dev_info(all_devices, input_id) {
+    for (var i = 0; i < all_devices.devices.length; i++) {
+      if (all_devices.devices[i].sdi_id == input_id) {
+        return all_devices.devices[i]
+      }
+    }
+    return null;
+	}
+
+  $(document).ready(function() {
+    show_out_specific_fields();
+    show_abs_seg_path_base_url();
+    $("#out_type").bind('change', show_out_specific_fields);
+    $("#set_backup_url").bind('change', show_out_specific_fields);
+    $("#enable_abs_seg_path").bind('change', show_abs_seg_path_base_url);
+    $("#dash_chunked").bind('change', display_disable_bframes_option);
+    populate_table();
+  });
+
+  function get_input_config_json_str(event) {
+    var inp_config = {};
+    inp_config.input = {};
+    inp_config.input.input_url = document.getElementById("input_ip_url").value;
+    return JSON.stringify(inp_config, null, 2);
+  }
+
+  function get_startjson_str(event) {
+    var enc_json = {};
+    var video = {};
+    var audio = {};
+    var sub_stream_group = document.getElementById("sub_stream_group")
+    var aud_stream_group = document.getElementById("aud_stream_group")
+
+    // TODO (rapatagar): change getElementById to getElementsByName
+
+    enc_json.sdi_id = $('#sdi_id').val();
+
+    // Load video configurations here
+    enc_json.video = {}
+    enc_json.video.variants = [];
+    enc_json.video.speed_preset = document.getElementById("speed_preset").value;
+    enc_json.video.rate_control = document.getElementById("rate_control").value;
+
+    enc_json.video.enable_cc = 'off';
+    if (true == document.getElementsByName("enable_cc")[0].checked) {
+      enc_json.video.enable_cc = 'on';
+    }
+    enc_json.video.num_b_frame = 8;
+    if (true == document.getElementsByName("disable_bframes")[0].checked) {
+      enc_json.video.num_b_frame = 0;
+    }
+    var num_sub_streams = sub_stream_group.childElementCount;
+    for (var i = 0; i < num_sub_streams; i++) {
+      enc_json.video.variants[i] = {}
+      enc_json.video.variants[i].bitrate = document.getElementById('video_bitrate' + i).value;
+      if (document.getElementById('vid_out_res' + i).value == "Same as input") {
+        enc_json.video.variants[i].video_width = "-1";
+        enc_json.video.variants[i].video_height = "-1";
+      } else {
+        enc_json.video.variants[i].video_width = document.getElementById('video_width' + i).value;
+        enc_json.video.variants[i].video_height = document.getElementById('video_height' + i).value;
+      }
+      enc_json.video.variants[i].audio_tag =  document.getElementById('audio_name' + i).value;
+    }
+    // Load audio configurations here
+    enc_json.audio = {}
+    var num_aud_streams = aud_stream_group.childElementCount;
+    for (var i = 0; i < num_aud_streams; i++) {
+      var aud_tag = 'aud' + i;
+      enc_json.audio[aud_tag] = {};
+      enc_json.audio[aud_tag].bitrate =  document.getElementById('audio_bitrate' + i).value;
+    }
+
+    // Load output configurations here
+    enc_json.output = {}
+    enc_json.output.out_type = document.getElementById("out_type").value;
+    enc_json.output.segment_size = document.getElementsByName("segment_size")[0].value;
+    enc_json.output.burn_tc = 'off';
+    if (true == document.getElementsByName("burn_tc")[0].checked) {
+      enc_json.output.burn_tc = 'on';
+    }
+    enc_json.output.create_muxed_av = 'off';
+    if (true == document.getElementsByName("create_muxed_av")[0].checked &&
+        "HLS" == document.getElementById("out_type").value) {
+      enc_json.output.create_muxed_av = 'on';
+    }
+    enc_json.output.enable_abs_seg_path = 'off';
+    if (true == document.getElementsByName("enable_abs_seg_path")[0].checked) {
+      enc_json.output.enable_abs_seg_path = 'on';
+    }
+    if ("HLS" == enc_json.output.out_type && 'on' == enc_json.output.enable_abs_seg_path) {
+      enc_json.output.abs_seg_path_base_url = document.getElementById("abs_seg_path_base_url").value;
+    }
+    if (("HLS" == enc_json.output.out_type) ||
+        ("DASH" == enc_json.output.out_type) ||
+        ("CMAF" == enc_json.output.out_type)) {
+      enc_json.output.ingest_url = document.getElementById("ingest").value;
+      enc_json.output.b_ingest_url = document.getElementById("b_ingest").value;
+    }
+    if (("DASH" == enc_json.output.out_type) || ("CMAF" == enc_json.output.out_type)) {
+      enc_json.output.dash_chunked = 'off';
+      if (true == document.getElementsByName("dash_chunked")[0].checked) {
+          enc_json.output.dash_chunked = 'on';
+      }
+    }
+
+    enc_json.output.eth_interface = document.getElementById("prim_eth_interface").value;
+    enc_json.output.b_eth_interface = document.getElementById("backup_eth_interface").value;
+
+    //disabling eth selection
+    enc_json.output.eth_interface = "";
+    enc_json.output.b_eth_interface = "";
+
+    if (false == document.getElementsByName("set_backup_url")[0].checked) {
+      enc_json.output.b_ingest_url = "";
+      enc_json.output.b_eth_interface = "";
+    }
+
+    return JSON.stringify(enc_json, null, 2);
+  }
+
+  function get_stopjson_str(event) {
+    var enc_json = {};
+    enc_json.sdi_id = $('#sdi_id').val()
+    return JSON.stringify(enc_json, null, 2);
+  }
+
+  function submit_input_configuration() {
+    $('#add_input_modal').modal('toggle');
+    var table = document.getElementById("status_table");
+    var row = table.rows[table.rows.length-1];
+    row.setAttribute("style", "color:grey");
+    var cells = row.cells;
+    cells[2].innerHTML = "";
+    cells[3].innerHTML = "";
+    cells[4].innerHTML = "";
+    cells[5].innerHTML = "";
+    cells[6].innerHTML = "";
+    cells[7].innerHTML = "";
+    cells[8].innerHTML = "Adding Input";
+    cells[9].innerHTML = "";
+      $.ajax({
+          url: "/broadcaster/input",
+          type: "POST",
+          data : get_input_config_json_str(),
+          success: function(){
+            populate_table();
+          },
+          error: function (){
+            populate_table();
+          }
+        });
+        return false;
+  }
+
+	function submit_form() {
+	    $('#myModal').modal('toggle');
+        var table = document.getElementById("status_table");
+        var sdi_id = $('#sdi_id').val();
+        var row = table.rows[parseInt(sdi_id) + 1];
+        row.setAttribute("style", "color:grey");
+        var cells = row.cells;
+        cells[2].innerHTML = "";
+        cells[3].innerHTML = "";
+        cells[4].innerHTML = "";
+        cells[5].innerHTML = "";
+        cells[6].innerHTML = "";
+        cells[7].innerHTML = "";
+        cells[8].innerHTML = "Starting";
+        cells[9].innerHTML = "";
+
+        $.ajax({
+            url: "/broadcaster/",
+            type: "POST",
+            data : get_startjson_str(),
+            success: function(){
+              populate_table();
+            },
+            error: function (){
+              populate_table();
+            }
+          });
+          return false;
+    }
+    function stop_instance(event) {
+        var table = document.getElementById("status_table");
+        var sdi_id = JSON.parse(event.parentNode.parentNode.getAttribute("data-config")).sdi_id;
+        var row = table.rows[parseInt(sdi_id) + 1];
+        row.setAttribute("style", "color:grey");
+        var cells = row.cells;
+        cells[2].innerHTML = "";
+        cells[3].innerHTML = "";
+        cells[4].innerHTML = "";
+        cells[5].innerHTML = "";
+        cells[6].innerHTML = "";
+        cells[7].innerHTML = "";
+        cells[8].innerHTML = "Stopping";
+        cells[9].innerHTML = "";
+
+        $.ajax({
+            url: "/broadcaster/" + sdi_id,
+            type: "DELETE",
+            success: function(){
+              populate_table();
+            },
+            error: function (){
+              populate_table();
+            }
+          });
+          return false;
+    }
+
+    function remove_input(event) {
+      var table = document.getElementById("status_table");
+      var sdi_id = JSON.parse(event.parentNode.parentNode.getAttribute("data-config")).sdi_id;
+      var row = table.rows[parseInt(sdi_id) + 1];
+      row.setAttribute("style", "color:grey");
+      var cells = row.cells;
+      cells[2].innerHTML = "";
+      cells[3].innerHTML = "";
+      cells[4].innerHTML = "";
+      cells[5].innerHTML = "";
+      cells[6].innerHTML = "";
+      cells[7].innerHTML = "";
+      cells[8].innerHTML = "Removing Input";
+      cells[9].innerHTML = "";
+
+        $.ajax({
+            url: "/broadcaster/input/" + sdi_id,
+            type: "DELETE",
+            success: function(){
+              populate_table();
+            },
+            error: function (){
+              populate_table();
+            }
+          });
+          return false;
+    }
+
+    function update_eth_interface_dropdown(eth_if=[], id) {
+
+      var eth_list = document.getElementById(id);
+      while (eth_list.length > 0) {
+         eth_list.remove(0);
+      }
+
+      for(var i = 0; i < eth_if.length; i++) {
+        var eth = document.createElement('option');
+        eth.text = eth_if[i].name
+        eth.value = eth_if[i].name
+        eth_list.add(eth, 0);
+      }
+
+      // Hide dropdown menu if only one eth-interface is available
+      document.getElementById("eth_interface_grp").style.display = "";
+      if(eth_if.length < 2) {
+        document.getElementById("eth_interface_grp").style.display = "none";
+      }
+      document.getElementById("eth_interface_grp").style.display = "none"; //disabling eth selection
+    }
+
+    function load_prev_configs(event) {
+      var sub_stream_group = document.getElementById("sub_stream_group")
+      var aud_stream_group = document.getElementById("aud_stream_group")
+      var config = JSON.parse(event.parentNode.parentNode.getAttribute("data-config"))
+
+      document.getElementById("sdi_id").value = config.sdi_id;
+      if (sub_stream_group.childElementCount  <= 0) {
+        add_substream(event);
+      }
+      if (aud_stream_group.childElementCount  <= 0) {
+        add_aud_stream(event);
+      }
+
+      update_eth_interface_dropdown(config.eth_interface_list, "prim_eth_interface");
+      update_eth_interface_dropdown(config.eth_interface_list, "backup_eth_interface");
+
+      if (config.status == 'InActive') {
+        return;
+      }
+
+      // Load video configurations here
+      document.getElementById("speed_preset").value = config.video.speed_preset;
+      document.getElementById("rate_control").value = config.video.rate_control;
+      document.getElementsByName("enable_cc")[0].checked = false;
+      if (config.video.enable_cc == 'on') {
+        document.getElementsByName("enable_cc")[0].checked = true;
+      }
+      document.getElementsByName("disable_bframes")[0].checked = false;
+      if (config.video.num_b_frame == 0) {
+        document.getElementsByName("disable_bframes")[0].checked = true;
+      }
+
+      var num_sub_streams = config.video.variants.length;
+      var num_aud_streams = Object.keys(config.audio).length;
+      while ((sub_stream_group.childElementCount > num_sub_streams) &&
+             (num_sub_streams > 0)) {
+        err = rem_substream(event);
+        if (err) {
+          break;
+        }
+      }
+      while ((aud_stream_group.childElementCount > num_aud_streams) &&
+             (num_aud_streams > 0)) {
+        err = rem_aud_stream(event);
+        if (err) {
+          break;
+        }
+      }
+
+      for (var i = 0; i < num_aud_streams; i++) {
+        if (aud_stream_group.childElementCount <= i) {
+          add_aud_stream(event);
+        }
+        var aud_tag = Object.keys(config.audio)[i];
+        document.getElementById('audio_bitrate' + i).value = config.audio[aud_tag].bitrate;
+      }
+
+      for (var i = 0; i < num_sub_streams; i++) {
+        if (sub_stream_group.childElementCount <= i) {
+          add_substream(event);
+        }
+        var aud_tag = config.video.variants[i].audio_tag;
+        document.getElementById('video_bitrate' + i).value = config.video.variants[i].bitrate;
+        document.getElementById('vid_out_res' + i).value = get_resolution(config.video.variants[i].video_width,
+                                                                          config.video.variants[i].video_height);
+        if (document.getElementById('vid_out_res' + i).value == "Same as input") {
+            document.getElementById('video_width' + i).value = config.input.width;
+            document.getElementById('video_height' + i).value = config.input.height;
+        } else {
+            document.getElementById('video_width' + i).value = config.video.variants[i].video_width;
+            document.getElementById('video_height' + i).value = config.video.variants[i].video_height;
+        }
+        set_width_height_display(i)
+        document.getElementById('audio_name' + i).value = config.video.variants[i].audio_tag;
+      }
+      update_aud_list_dropdown(event)
+
+      document.getElementById("out_type").value = config.output.out_type;
+      document.getElementsByName("segment_size")[0].value = config.output.segment_size;
+
+      document.getElementsByName("burn_tc")[0].checked = false;
+      if (config.output.burn_tc == 'on') {
+        document.getElementsByName("burn_tc")[0].checked = true;
+      }
+      document.getElementsByName("create_muxed_av")[0].checked = false;
+      if (config.output.create_muxed_av == 'on') {
+        document.getElementsByName("create_muxed_av")[0].checked = true;
+      }
+      document.getElementsByName("enable_abs_seg_path")[0].checked = false;
+      if (config.output.enable_abs_seg_path == 'on') {
+        document.getElementsByName("enable_abs_seg_path")[0].checked = true;
+      }
+      if ("HLS" == config.output.out_type && 'on' == config.output.enable_abs_seg_path) {
+        document.getElementById("abs_seg_path_base_url").value = config.output.abs_seg_path_base_url;
+      }
+
+      document.getElementById("ingest").value = config.output.ingest_url;
+      document.getElementById("b_ingest").value = config.output.b_ingest_url;
+
+      document.getElementsByName("dash_chunked")[0].checked = false;
+      if (config.output.dash_chunked == 'on') {
+          document.getElementsByName("dash_chunked")[0].checked = true;
+      }
+
+      if (config.output.eth_interface != "") {
+        document.getElementById("prim_eth_interface").value = config.output.eth_interface;
+      }
+
+      document.getElementsByName("set_backup_url")[0].checked = false;
+      if (config.output.b_ingest_url != '') {
+        document.getElementsByName("set_backup_url")[0].checked = true;
+      }
+    }
+
+    function add_option_to_dropdown(dropdown, text, val) {
+      var option = document.createElement('option');
+      option.text = text;
+      option.value = val;
+      dropdown.add(option);
+    }
+
+    function edit_instance(event) {
+      load_prev_configs(event)
+      show_out_specific_fields()
+    }
+
+    function add_substream(event) {
+      var sub_stream_group = document.getElementById("sub_stream_group")
+      var sub_stream_id = sub_stream_group.childElementCount
+      if (sub_stream_id >= 5) {
+        alert('Maximum number of substreams already added')
+        return
+      }
+      var sdi_id = document.getElementById("sdi_id").value;
+      var table = document.getElementById("status_table");
+      var config = JSON.parse(table.rows[parseInt(sdi_id) + 1].getAttribute("data-config"))
+      var av_params = document.createElement('div');
+      av_params.class = "form-group";
+      av_params.id = "av_params" + sub_stream_id;
+
+      var vid_br_div = document.createElement('div');
+      vid_br_div.className = "col-sm-3";
+      var vid_br_input = document.createElement("input");
+      vid_br_input.id = 'video_bitrate' + sub_stream_id;
+      vid_br_input.name = 'video_bitrate' + sub_stream_id;
+      vid_br_input.type = "integer";
+      vid_br_input.className = "form-control";
+      vid_br_input.placeholder = "Video Bitrate";
+      vid_br_div.appendChild(vid_br_input);
+
+      var vid_res_div = document.createElement('div');
+      vid_res_div.className = "col-sm-3";
+      var vid_res_input = document.createElement("select");
+      vid_res_input.className = "form-control";
+      vid_res_input.name = 'vid_out_res' + sub_stream_id
+      vid_res_input.id = 'vid_out_res' + sub_stream_id
+      vid_res_input.sub_stream_id = sub_stream_id
+      vid_res_input.onchange = set_width_height_values;
+
+      add_option_to_dropdown(vid_res_input, "Same as input", "Same as input");
+      add_option_to_dropdown(vid_res_input, "1080p", "1080p");
+      add_option_to_dropdown(vid_res_input, "720p", "720p");
+      add_option_to_dropdown(vid_res_input, "480p", "480p");
+      add_option_to_dropdown(vid_res_input, "360p", "360p");
+      add_option_to_dropdown(vid_res_input, "240p", "240p");
+      add_option_to_dropdown(vid_res_input, "Custom", "Custom");
+      vid_res_div.appendChild(vid_res_input);
+
+      var vid_wd_div = document.createElement('div');
+      vid_wd_div.className = "col-sm-2";
+      var vid_wd_input = document.createElement("input");
+      vid_wd_input.id = 'video_width' + sub_stream_id;
+      vid_wd_input.name = 'video_width' + sub_stream_id;
+      vid_wd_input.type = "integer";
+      vid_wd_input.value = config.input.width;
+      vid_wd_input.className = "form-control";
+      vid_wd_div.appendChild(vid_wd_input);
+
+      var vid_ht_div = document.createElement('div');
+      vid_ht_div.className = "col-sm-2";
+      var vid_ht_input = document.createElement("input");
+      vid_ht_input.id = 'video_height' + sub_stream_id;
+      vid_ht_input.name = 'video_height' + sub_stream_id;
+      vid_ht_input.type = "integer";
+      vid_ht_input.value = config.input.height;
+      vid_ht_input.className = "form-control";
+      vid_ht_div.appendChild(vid_ht_input);
+
+      var aud_br_div = document.createElement('div');
+      aud_br_div.className = "col-sm-2";
+      var aud_name_input = document.createElement("select");
+      aud_name_input.id = 'audio_name' + sub_stream_id;
+      aud_name_input.name = 'audio_name' + sub_stream_id;
+      aud_name_input.className = "form-control";
+      aud_br_div.appendChild(aud_name_input);
+
+      av_params.appendChild(vid_br_div);
+      av_params.appendChild(vid_res_div);
+      av_params.appendChild(vid_wd_div);
+      av_params.appendChild(vid_ht_div);
+      av_params.appendChild(aud_br_div);
+
+      sub_stream_group.appendChild(av_params);
+      update_aud_list_dropdown(event)
+      set_width_height_display(sub_stream_id)
+    }
+    function rem_substream(event) {
+      var sub_stream_group = document.getElementById("sub_stream_group")
+      var num_vid_variants =  sub_stream_group.childElementCount
+      var sub_stream_id = num_vid_variants - 1
+      if (sub_stream_id == 0) {
+        alert('Atleast one stream variant must be present')
+        return -1;
+      }
+
+      var av_param = '#av_params' + sub_stream_id
+      $(av_param).remove();
+
+      return 0;
+    }
+
+    function add_aud_stream(event) {
+      var aud_stream_group = document.getElementById("aud_stream_group")
+      var aud_id = aud_stream_group.childElementCount
+      if (aud_id >= 5) {
+        alert('Maximum number of audio streams already added')
+        return
+      }
+
+      var aud_params_div = document.createElement('div');
+      aud_params_div.class = "form-group";
+      aud_params_div.id = "aud_params" + aud_id;
+      aud_params_div.className = "col-sm-12";
+
+      var aud_br_div = document.createElement('div');
+      aud_br_div.className = "col-sm-4";
+      var aud_br_input = document.createElement("input");
+      aud_br_input.id = 'audio_bitrate' + aud_id;
+      aud_br_input.name = 'audio_bitrate' + aud_id;
+      aud_br_input.type = "integer";
+      aud_br_input.className = "form-control";
+      aud_br_input.placeholder = "Audio Bitrate";
+      aud_br_input.onchange = update_aud_list_dropdown;
+      aud_br_div.appendChild(aud_br_input);
+
+      aud_params_div.appendChild(aud_br_div);
+      aud_stream_group.appendChild(aud_params_div);
+    }
+
+    function rem_aud_stream(event) {
+      var aud_stream_group = document.getElementById("aud_stream_group")
+      var aud_stream_id =  (aud_stream_group.childElementCount - 1)
+      if (aud_stream_id == 0) {
+        alert('Atleast one audio must be present')
+        return
+      }
+      var aud_param = '#aud_params' + aud_stream_id
+      $(aud_param).remove();
+      update_aud_list_dropdown(event)
+    }
+
+    function update_aud_list_dropdown(event) {
+      var aud_stream_group = document.getElementById("aud_stream_group")
+      var vid_stream_group = document.getElementById("sub_stream_group")
+      var num_aud =  aud_stream_group.childElementCount
+      var num_vid =  vid_stream_group.childElementCount
+
+      // For all the video streams, update audio dropdown menu
+      for (var i = 0; i < num_vid; i++) {
+        var aud_dropdwn_list = 'audio_name' + i
+        var select = document.getElementById(aud_dropdwn_list);
+
+        // Store previously selected option (if any)
+        var select_val = null;
+        if (select.selectedIndex != -1){
+          select_val = select.options[select.selectedIndex].text;
+        }
+
+        // Clear the drop down list
+        while (select.options.length) {
+          select.options[0] = null;
+        }
+
+        // Store new values in the drop down list
+        for (var a = 0; a < num_aud; a++) {
+          var option = document.createElement('option');
+          var aud_br = document.getElementById("audio_bitrate" + a).value
+          option.text = aud_br; // text can be later updated, example codec,bitrate (aac,128)
+          option.value = 'aud' + a;
+          if (select_val == option.text) {
+            option.selected = true;
+          }
+          select.add(option, a);
+        }
+      }
+    }
+
+  </script>
+</head>
+<body>
+  <div class="jumbotron">
+    <h1>Adaptive Bitrate Broadcaster</h1>
+    <p>A real time encoder for live broadcast</p>
+  </div>
+  <p></p>
+  <div class="row">
+    <div class="col-sm-offset-1 col-sm-10">
+      <table id="status_table" class="table table-striped table-bordered table-hover table-condensed ">
+        <thead>
+          <tr>
+            <th class="col-sm-1">Channel No.</th>
+            <th>Input Info</th>
+            <th>Video Bitrate</th>
+            <th>Output Resolution</th>
+            <th>Audio Bitrate</th>
+            <th class="col-sm-1">Output type</th>
+            <th>Output URL</th>
+            <th>Segment size</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+      </table>
+    </div>
+  </div>
+
+  <!-- Modal -->
+  <div class="modal fade" id="myModal" role="dialog">
+    <div class="modal-dialog">
+
+      <!-- Modal content-->
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+          <h4 class="modal-title">Stream settings</h4>
+        </div>
+        <div class="modal-body">
+          <form class="form-horizontal" id="configureform" onsubmit="return submit_form();">
+            <div hidden class="form-group">
+              <label class="control-label col-sm-2" for="sdi_id">SDI Port:</label>
+              <div class="col-sm-10">
+                <input type="number" class="form-control" name="sdi_id" id="sdi_id">
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="control-label col-sm-2" for="out_type">Output type:</label>
+              <div class="col-sm-10">
+                <select class="form-control" name="out_type" id="out_type">
+                  <option class="form-control" value="HLS" selected>HLS</option>
+                  <option class="form-control" value="DASH">DASH</option>
+                  <option class="form-control" value="CMAF">HLS and DASH (CMAF)</option>
+                </select>
+              </div>
+            </div>
+            <label style="font-size: 15px;" for="aud_stream_config"> Audio Configuration </label>
+            <button type="button" onclick="add_aud_stream(this)"> + </button>
+            <button type="button" onclick="rem_aud_stream(this)"> - </button>
+            <table style="width:100%">
+              <tr>
+                <th class="col-sm-2" style="text-align: Left;font-size: 12px;">Audio Bitrate (kbps)</th>
+              </tr>
+            </table>
+            <div class="form-group"  id="aud_stream_group">
+            </div>
+            <label style="font-size: 15px;" for="sub_stream_config"> Stream variant(s) Configuration </label>
+            <button type="button" onclick="add_substream(this)"> + </button>
+            <button type="button" onclick="rem_substream(this)"> - </button>
+            <table style="width:100%">
+              <tr>
+                <th class="col-sm-3" style="text-align: Center;font-size: 12px;">Video Bitrate (kbps)</th>
+                <th class="col-sm-3" style="text-align: Center;font-size: 12px;">Video Resolution</th>
+                <th class="col-sm-2" style="text-align: Center;font-size: 12px;">Width</th>
+                <th class="col-sm-2" style="text-align: Center;font-size: 12px;">Height</th>
+                <th class="col-sm-2" style="text-align: Center;font-size: 12px;">Audio Selection</th>
+              </tr>
+            </table>
+            <div class="form-group"  id="sub_stream_group">
+            </div>
+            <div class="form-group">
+              <label class="control-label col-sm-3" for="speed_preset">Video Quality:</label>
+              <div class="col-sm-3">
+                <select class="form-control" name="speed_preset" id="speed_preset">
+                  <option class="form-control" value="medium">Best</option>
+                  <option class="form-control" value="fast" selected>Good</option>
+                  <option class="form-control" value="veryfast">Fair</option>
+                </select>
+              </div>
+              <span id="rate_control_input">
+                <label class="control-label col-sm-3" for="rate_control">Rate Control:</label>
+                <div class="col-sm-3">
+                  <select class="form-control" name="rate_control" id="rate_control">
+                    <option class="form-control" value="vbr" selected>ABR</option>
+                    <option class="form-control" value="cbr">CBR</option>
+                  </select>
+                </div>
+              </span>
+            </div>
+            <span id="ingest_specific_input">
+              <div class="form-group">
+                <label class="control-label col-sm-2" for="ingest">Ingest URL:</label>
+                <div class="col-sm-10">
+                  <input type="url" class="form-control" title="Primary Ingest URL"
+                   name="ingest" id="ingest" placeholder="http://<primary url>">
+                  <input type="url" class="form-control" title="Backup Ingest URL. Leave it blank if backup is not required"
+                   name="b_ingest" id="b_ingest" placeholder="http://<backup url>">
+                </div>
+              </div>
+            </span>
+            <span id="set_backup_url">
+              <div class="form-group">
+                <div class="col-sm-offset-2 col-sm-6 checkbox">
+                    <label><input type="checkbox" name="set_backup_url">Set Backup URL</label>
+                </div>
+              </div>
+            </span>
+            <span id="segment_specific_input">
+              <div class="form-group">
+                <label class="control-label col-sm-2" for="segment_size">Segment size</label>
+                <div class="col-sm-10">
+                  <input type="number" class="form-control" name="segment_size" id="segment_size"
+                    placeholder="Enter in seconds">
+                </div>
+              </div>
+            </span>
+            <div class="form-group" id="eth_interface_grp">
+              <label class="control-label col-sm-2" for="prim_eth_interface">Ethernet interface</label>
+              <div class="col-sm-10">
+                <select class="form-control" name="prim_eth_interface" id="prim_eth_interface">
+                </select>
+                <select class="form-control" name="backup_eth_interface" id="backup_eth_interface">
+                </select>
+              </div>
+            </div>
+            <span id="enable_cc">
+              <div class="form-group">
+                <div class="col-sm-offset-2 col-sm-6 checkbox">
+                    <label><input type="checkbox" name="enable_cc"
+                      title="Applicable only if closed captions is present in input">Enable Closed Captions</label>
+                </div>
+              </div>
+            </span>
+            <span id="disable_bframes">
+              <div class="form-group">
+                <div class="col-sm-offset-2 col-sm-6 checkbox">
+                    <label><input type="checkbox" name="disable_bframes">Disable 'B' frames</label>
+                </div>
+              </div>
+            </span>
+            <span id="muxed_av_specific_input">
+              <div class="form-group">
+                <div class="col-sm-offset-2 col-sm-6 checkbox">
+                    <label><input type="checkbox" name="create_muxed_av">Create Muxed AV Segments</label>
+                </div>
+              </div>
+            </span>
+            <span id="enable_abs_seg_path_specific_input">
+              <div class="form-group">
+                <div class="col-sm-offset-2 col-sm-6 checkbox">
+                    <label><input type="checkbox" name="enable_abs_seg_path" id="enable_abs_seg_path">Enable absolute path for segments</label>
+                </div>
+              </div>
+            </span>
+            <span id="abs_seg_path_base_url_specific_input">
+              <div class="form-group">
+                <label class="control-label col-sm-2" for="abs_seg_path_base_url">Segments absolute path base URL:</label>
+                <div class="col-sm-10">
+                  <input type="url" class="form-control" name="abs_seg_path_base_url" id="abs_seg_path_base_url" placeholder="http://">
+                </div>
+              </div>
+            </span>
+            <span id="chunk_specific_input">
+              <div class="form-group">
+                <div class="col-sm-offset-2 col-sm-5 checkbox">
+                    <label><input type="checkbox" name="dash_chunked" id="dash_chunked"> Chunked HTTP output</label>
+                </div>
+              </div>
+            </span>
+            <div class="form-group">
+              <div class="col-sm-offset-2 col-sm-10 checkbox">
+                  <label><input type="checkbox" name="burn_tc"> Burn Timecode (Experimental) </label>
+              </div>
+            </div>
+            <div class="form-group">
+              <div class="col-sm-offset-2 col-sm-10">
+                <button type="submit" class="btn btn-default" >Submit</button>
+                <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+              </div>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer"></div>
+      </div>
+    </div>
+  </div>
+  <div class="modal fade" id="add_input_modal" role="dialog">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+          <h4 class="modal-title">Input configuration</h4>
+        </div>
+        <div class="modal-body">
+          <form class="form-horizontal" id="configureform" onsubmit="return submit_input_configuration();">
+            <span id="ip_inpur_specific_config">
+              <div class="form-group">
+                <label class="control-label col-sm-2" for="hls_ingest">Input URL:</label>
+                <div class="col-sm-10">
+                  <input type="url" class="form-control" name="input_ip_url" id="input_ip_url"
+                  title="Ex: udp://@:1234, http://www.example.com/stream.ts">
+                </div>
+              </div>
+            </span>
+            <div class="form-group">
+              <div class="col-sm-offset-2 col-sm-10">
+                <button type="submit" class="btn btn-default" >Submit</button>
+                <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+              </div>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer"></div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
