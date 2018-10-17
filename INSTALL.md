@@ -11,7 +11,23 @@ The following softwares needs to be installed for Adaptive Bitrate Broadcaster t
 - ffmpeg 4.0 or above (configured with a x264 video encoder)
 - A webserver with WSGI support(Apache2 preferred)
 
-The below installation procedure is tested on macOS High Sierra and Ubuntu 18.04. Some these steps might need a little modification if they don't work or apply for your OS version.
+The below installation procedure is tested on macOS High Sierra, Ubuntu 14.04 and Ubuntu 18.04. Some these steps might need a little modification if they don't work or apply for your OS version.
+
+# Quick Install
+
+If you are using Ubuntu OS, then the `install_ubuntu.sh` script automates all the install steps. Just running that script will install all the required software and configure them.
+
+```bash
+git clone https://github.com/jkarthic-akamai/ABR-Broadcaster
+cd ABR-Broadcaster
+./install_ubuntu.sh
+```
+
+If the above scripts runs without any errors then it means ABR-Broadcaster is installed successfully in your system.
+
+# Detailed Step-by-Step Install
+
+If you are some OS other than Ubuntu or if you need understand and control of the install steps then please follow the detailed but longer install procedure.
 
 ## Xcode (macOS only)
 
