@@ -25,6 +25,8 @@ cd ABR-Broadcaster
 
 If the above scripts runs without any errors then it means ABR-Broadcaster is installed successfully in your system.
 
+The basic installation will install only your webcam as input capture device. If you want to use a Decklink capture card for professional video capture then additionally follow the section [Decklink Capture Install](#decklink-capture-install).
+
 # Detailed Step-by-Step Install
 
 If you are some OS other than Ubuntu or if you need understand and control of the install steps then please follow the detailed but longer install procedure.
@@ -262,3 +264,42 @@ In Ubuntu run the following command to restart Apache2 server
 ```bash
 sudo service apache2 reload
 ```
+
+# Decklink Capture Install
+
+To use a Decklink SDI-input capture card for professional video capture, follow the below steps.
+
+- The Decklink drivers and the SDK are two separate packages. Download it from the BlackMagicDesign's offical [site](https://www.blackmagicdesign.com/in/support/family/capture-and-playback). Download the latest versions for `Desktop Video` and `Desktop Video SDK`
+
+- Uncompress the `Desktop Video` package. For example
+
+```bash
+tar -xvzf Blackmagic_Desktop_Video_Linux_10.11.2.tar.gz
+```
+The above command could change a little if you had downloaded a `Desktop Video` version different than above.
+
+- Install the desktop video package relevant to your OS. For example if you are running Ubuntu 64-bit, run the below command to install it.
+
+```bash
+sudo dpkg -i Blackmagic_Desktop_Video_Linux_10.11.2/deb/x86_64/desktopvideo_10.11.2a3_amd64.deb
+```
+
+- Uncompress the `Desktop Video SDK` package. For example,
+
+```bash
+unzip Blackmagic_DeckLink_SDK_10.11.2.zip
+```
+
+- Copy the SDK header files to the system's include path so that ffmpeg can use it.
+
+```
+sudo cp Blackmagic\ DeckLink\ SDK\ 10.11.2/Linux/include/* /usr/local/include
+```
+
+- Rebuild and install ffmpeg with decklink plugin enabled.
+
+```
+install/ffmpeg.sh "--enable-decklink --enable-nonfree"
+```
+
+- In the Web UI interface of ABR-Broadcaster click on **"Refresh Input"** button to detect the presence of Decklink input device.
