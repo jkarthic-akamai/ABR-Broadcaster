@@ -83,7 +83,7 @@
       }
       set_width_height_display(i);
   }
-function get_resolution(width, height) {
+  function get_resolution(width, height) {
     if (width == "1920" && height == "1080")
       return "1080p";
     else if (width == "1280" && height == "720")
@@ -126,110 +126,112 @@ function get_resolution(width, height) {
         cell.style.textAlign = 'left';
         cell.innerHTML = value;
 	}
-	function populate_table() {
+	function populate_table(jsonData) {
+        var all_devices = JSON.parse(jsonData);
+        var num_devices = all_devices.devices.length
+
+        // Deleting all rows expect 1st row with table info
+        var table = document.getElementById("status_table");
+        while (table.rows.length > 1) {
+          table.deleteRow(1);
+        }
+
+        var i = 0;
+        while (i < num_devices + 1) {
+            var vid_br = ''
+            var aud_br = ''
+            var vid_res = ''
+            var inp_id = table.rows.length ;
+            var inp_src_info = '';
+            var out_type = '';
+            var segment_size = '';
+            var output_url = ''
+            var status = '';
+            var button_str = '';
+
+            var rowdata = get_dev_info(all_devices, inp_id - 1);
+            var row = table.insertRow(table.rows.length);
+            row.style.display = '';
+
+            if (rowdata != null) {
+              i += 1;
+              if (rowdata.input.input_interface.indexOf('v4l2') != -1) {
+                inp_src_info += 'v4l2 device: <br /> ';
+              } else if (rowdata.input.input_interface.indexOf('decklink') != -1) {
+                inp_src_info += 'Decklink: ' + rowdata.input.input_url + '<br /> ';
+              } else if (rowdata.input.input_interface.indexOf('aja') != -1) {
+                inp_src_info += 'Aja: ' + rowdata.input.input_url + '<br /> ';
+              } else {
+                inp_src_info += rowdata.input.input_interface + ': ' + rowdata.input.input_url + '<br /> ';
+              }
+
+             if (rowdata.input.status == 'Active')
+                inp_src_info += rowdata.input.width + 'x' + rowdata.input.height +
+                                rowdata.input.scantype + ' @ ' + rowdata.input.framerate + 'fps'
+             else
+                inp_src_info += rowdata.input.status
+
+             if (inp_src_info.indexOf('Device open error') != -1) {
+               //Hide the row
+               row.style.display = 'none';
+             }
+              row.setAttribute("data-config", JSON.stringify(rowdata, null, 4));
+              for (sub_stream_id = 0; sub_stream_id < rowdata.video.variants.length; sub_stream_id++) {
+                vid_br += rowdata.video.variants[sub_stream_id].bitrate
+                if ('-1' == rowdata.video.variants[sub_stream_id].video_width ||
+                    '-1' == rowdata.video.variants[sub_stream_id].video_height) {
+                  vid_res += rowdata.input.width + 'x' + rowdata.input.height
+                } else {
+                  vid_res += rowdata.video.variants[sub_stream_id].video_width + 'x' +
+                             rowdata.video.variants[sub_stream_id].video_height
+                }
+                var aud_tag = rowdata.video.variants[sub_stream_id].audio_tag
+                aud_br += rowdata.audio[aud_tag].bitrate
+                if (sub_stream_id < (rowdata.video.variants.length - 1)) {
+                  vid_br += ', <br /> '
+                  aud_br += ', <br /> '
+                  vid_res += ', <br /> '
+                }
+              }
+
+              out_type = rowdata.output.out_type;
+              segment_size = rowdata.output.segment_size;
+              status = rowdata.status
+              output_url = rowdata.output.ingest_url
+
+              button_str = '<button type="button" style="margin-top:7px;margin-left:7px" onclick="edit_instance(this)" class="btn btn-info btn-lg" data-toggle="modal" data-target="#myModal">Edit</button>';
+              if (rowdata.status == "Active") {
+                button_str = button_str + '<button type="button" style="margin-top:7px;margin-left:7px" onclick="stop_instance(this)" class="btn btn-info btn-lg">Stop</button>';
+              }
+
+              if (rowdata.input.input_interface.indexOf('URL') != -1) {
+                button_str = button_str + '<button type="button" style="margin-top:7px;margin-left:7px;font-size:15px" onclick="remove_input(this)" class="btn btn-info btn-lg">Remove Input</button>';
+              }
+            }
+            else if (i == num_devices) {
+              i += 1;
+              button_str = '<button type="button" style="margin-top:7px;margin-left:7px;font-size:15px" class="btn btn-info btn-lg" data-toggle="modal" data-target="#add_input_modal">Add Input</button>';
+            } else {
+              // Hide the row with no input_id info
+              row.style.display = 'none';
+            }
+            add_new_cell(row, 0, inp_id);
+            add_new_cell(row, 1, inp_src_info);
+            add_new_cell(row, 2, vid_br);
+            add_new_cell(row, 3, vid_res);
+            add_new_cell(row, 4, aud_br);
+            add_new_cell(row, 5, out_type);
+            add_new_cell(row, 6, output_url);
+            add_new_cell(row, 7, segment_size);
+            add_new_cell(row, 8, status);
+            add_new_cell(row, 9, button_str);
+        }
+	}
+	function update_status() {
         var xhttp = new XMLHttpRequest();
         xhttp.onreadystatechange = function() {
             if (this.readyState == 4 && this.status == 200) {
-                var jsonData = this.responseText;
-                var all_devices = JSON.parse(jsonData);
-                var num_devices = all_devices.devices.length
-
-                // Deleting all rows expect 1st row with table info
-                var table = document.getElementById("status_table");
-                while (table.rows.length > 1) {
-                  table.deleteRow(1);
-                }
-
-                var i = 0;
-                while (i < num_devices + 1) {
-                    var vid_br = ''
-                    var aud_br = ''
-                    var vid_res = ''
-                    var inp_id = table.rows.length ;
-                    var inp_src_info = '';
-                    var out_type = '';
-                    var segment_size = '';
-                    var output_url = ''
-                    var status = '';
-                    var button_str = '';
-
-                    var rowdata = get_dev_info(all_devices, inp_id - 1);
-                    var row = table.insertRow(table.rows.length);
-                    row.style.display = '';
-
-                    if (rowdata != null) {
-                      i += 1;
-                      if (rowdata.input.input_interface.indexOf('v4l2') != -1) {
-                        inp_src_info += 'v4l2 device: <br /> ';
-                      } else if (rowdata.input.input_interface.indexOf('decklink') != -1) {
-                        inp_src_info += 'Decklink: ' + rowdata.input.input_url + '<br /> ';
-                      } else if (rowdata.input.input_interface.indexOf('aja') != -1) {
-                        inp_src_info += 'Aja: ' + rowdata.input.input_url + '<br /> ';
-                      } else {
-                        inp_src_info += rowdata.input.input_interface + ': ' + rowdata.input.input_url + '<br /> ';
-                      }
-
-                     if (rowdata.input.status == 'Active')
-                        inp_src_info += rowdata.input.width + 'x' + rowdata.input.height +
-                                        rowdata.input.scantype + ' @ ' + rowdata.input.framerate + 'fps'
-                     else
-                        inp_src_info += rowdata.input.status
-
-                     if (inp_src_info.indexOf('Device open error') != -1) {
-                       //Hide the row
-                       row.style.display = 'none';
-                     }
-                      row.setAttribute("data-config", JSON.stringify(rowdata, null, 4));
-                      for (sub_stream_id = 0; sub_stream_id < rowdata.video.variants.length; sub_stream_id++) {
-                        vid_br += rowdata.video.variants[sub_stream_id].bitrate
-                        if ('-1' == rowdata.video.variants[sub_stream_id].video_width ||
-                            '-1' == rowdata.video.variants[sub_stream_id].video_height) {
-                          vid_res += rowdata.input.width + 'x' + rowdata.input.height
-                        } else {
-                          vid_res += rowdata.video.variants[sub_stream_id].video_width + 'x' +
-                                     rowdata.video.variants[sub_stream_id].video_height
-                        }
-                        var aud_tag = rowdata.video.variants[sub_stream_id].audio_tag
-                        aud_br += rowdata.audio[aud_tag].bitrate
-                        if (sub_stream_id < (rowdata.video.variants.length - 1)) {
-                          vid_br += ', <br /> '
-                          aud_br += ', <br /> '
-                          vid_res += ', <br /> '
-                        }
-                      }
-
-                      out_type = rowdata.output.out_type;
-                      segment_size = rowdata.output.segment_size;
-                      status = rowdata.status
-                      output_url = rowdata.output.ingest_url
-
-                      button_str = '<button type="button" style="margin-top:7px;margin-left:7px" onclick="edit_instance(this)" class="btn btn-info btn-lg" data-toggle="modal" data-target="#myModal">Edit</button>';
-                      if (rowdata.status == "Active") {
-                        button_str = button_str + '<button type="button" style="margin-top:7px;margin-left:7px" onclick="stop_instance(this)" class="btn btn-info btn-lg">Stop</button>';
-                      }
-
-                      if (rowdata.input.input_interface.indexOf('URL') != -1) {
-                        button_str = button_str + '<button type="button" style="margin-top:7px;margin-left:7px;font-size:15px" onclick="remove_input(this)" class="btn btn-info btn-lg">Remove Input</button>';
-                      }
-                    }
-                    else if (i == num_devices) {
-                      i += 1;
-                      button_str = '<button type="button" style="margin-top:7px;margin-left:7px;font-size:15px" class="btn btn-info btn-lg" data-toggle="modal" data-target="#add_input_modal">Add Input</button>';
-                    } else {
-                      // Hide the row with no input_id info
-                      row.style.display = 'none';
-                    }
-                    add_new_cell(row, 0, inp_id);
-                    add_new_cell(row, 1, inp_src_info);
-                    add_new_cell(row, 2, vid_br);
-                    add_new_cell(row, 3, vid_res);
-                    add_new_cell(row, 4, aud_br);
-                    add_new_cell(row, 5, out_type);
-                    add_new_cell(row, 6, output_url);
-                    add_new_cell(row, 7, segment_size);
-                    add_new_cell(row, 8, status);
-                    add_new_cell(row, 9, button_str);
-                }
+                populate_table(this.responseText);
             }
         };
         var url = "/broadcaster/";
@@ -253,7 +255,7 @@ function get_resolution(width, height) {
     $("#set_backup_url").bind('change', show_out_specific_fields);
     $("#enable_abs_seg_path").bind('change', show_abs_seg_path_base_url);
     $("#dash_chunked").bind('change', display_disable_bframes_option);
-    populate_table();
+    update_status();
   });
 
   function get_input_config_json_str(event) {
@@ -383,10 +385,10 @@ function get_resolution(width, height) {
           type: "POST",
           data : get_input_config_json_str(),
           success: function(){
-            populate_table();
+            update_status();
           },
           error: function (){
-            populate_table();
+            update_status();
           }
         });
         return false;
@@ -413,10 +415,10 @@ function get_resolution(width, height) {
             type: "POST",
             data : get_startjson_str(),
             success: function(){
-              populate_table();
+              update_status();
             },
             error: function (){
-              populate_table();
+              update_status();
             }
           });
           return false;
@@ -440,10 +442,10 @@ function get_resolution(width, height) {
             url: "/broadcaster/" + sdi_id,
             type: "DELETE",
             success: function(){
-              populate_table();
+              update_status();
             },
             error: function (){
-              populate_table();
+              update_status();
             }
           });
           return false;
@@ -468,15 +470,35 @@ function get_resolution(width, height) {
             url: "/broadcaster/input/" + sdi_id,
             type: "DELETE",
             success: function(){
-              populate_table();
+              update_status();
             },
             error: function (){
-              populate_table();
+              update_status();
             }
           });
           return false;
     }
 
+    function refresh_input(event) {
+          $.ajax({
+              url: "/broadcaster/input/",
+              type: "GET",
+              dataType:'text',
+              success: function(response){
+                populate_table(response);
+              },
+              error: function (){
+                update_status();
+              }
+            });
+            return false;
+    }
+    function refresh_confirm(event) {
+        var txt;
+        if (confirm("This will stop all running encode instances. Do you wish to proceed?")) {
+            refresh_input(event);
+        }
+    }
     function update_eth_interface_dropdown(eth_if=[], id) {
 
       var eth_list = document.getElementById(id);
@@ -824,6 +846,8 @@ function get_resolution(width, height) {
       </table>
     </div>
   </div>
+
+  <button type="button" onclick="refresh_confirm(this)" class="btn btn-info btn-lg">Refresh Input</button>
 
   <!-- Modal -->
   <div class="modal fade" id="myModal" role="dialog">

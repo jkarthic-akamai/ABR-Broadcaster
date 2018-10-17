@@ -20,6 +20,7 @@ working_dir = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(working_dir)
 import wc_configdb as configdb
 import wc_store_load_input_cfg as store_load_input_cfg
+import wc_stopencoder as stopencoder
 
 #Input inteface supported
 INPUT_INTERFACE_DECKLINK = 'decklink'
@@ -171,15 +172,20 @@ def get_avfoundation_devices():
             break;
     return num_devices
 
-def get_devices():
+def get_devices(refresh_devices):
     curr_input_id_list = get_input_src_id_list()
     num_input_src = len(curr_input_id_list)
-    if (num_input_src == 0):
-        num_input_src = get_decklink_devices()
-    if (num_input_src == 0):
-        num_input_src = get_v4l2_devices()
-    if (num_input_src == 0):
-        num_input_src = get_avfoundation_devices()
+    if num_input_src != 0 and refresh_devices == False:
+        return num_input_src
+
+    # Stop all running instances and remove all input sources if refresh is requested
+    if refresh_devices == True:
+        for i in range(0, num_input_src):
+            stopencoder.stop_encoder(i)
+        configdb.delete_config('CapInputNames')
+    num_input_src = get_decklink_devices()
+    num_input_src += get_v4l2_devices()
+    num_input_src += get_avfoundation_devices()
     return num_input_src
 
 def get_input_src_id_list():

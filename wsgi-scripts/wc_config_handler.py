@@ -50,6 +50,14 @@ class EncHandler(webapp2.RequestHandler):
         self.response.out.write('')
 
 class InputHandler(webapp2.RequestHandler):
+    os.environ['PATH'] = ':'.join([os.getenv('PATH'), '/usr/local/bin'])
+    def get(self):
+        status_code, reason, resp_body = encoder_status.get_encoder_status(None, True)
+        status = str(status_code) + ' ' + str(reason)
+        self.response.set_status(status)
+        self.response.headers['Content-Type'] = 'application/json'
+        self.response.out.write(resp_body)
+
     def post(self):
         input_config = self.request.json
 

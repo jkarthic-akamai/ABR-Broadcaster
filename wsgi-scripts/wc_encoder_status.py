@@ -24,12 +24,12 @@ import wc_capture as capture
 import wc_configdb as configdb
 import wc_store_load_input_cfg as store_load_input_cfg
 
-def get_encoder_status(input_id=None):
+def get_encoder_status(input_id=None, refresh_input=False):
     ffmpeg_cmd = 'ffmpeg '
     jrows = []
 
     #Get ethernet interface status
-    capture.get_devices()
+    capture.get_devices(refresh_input)
 
     if input_id == None:
         inp_src = configdb.get_config('CapInputNames', {}, \

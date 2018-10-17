@@ -97,7 +97,7 @@ def validate_encoder_params(encoder_params):
     max_video_width = 4096
     max_video_height = 2160
 
-    num_devices = capture.get_devices()
+    num_devices = capture.get_devices(False)
     sdi_id = encoder_params['sdi_id']
     out_type = encoder_params['output']['out_type']
 
