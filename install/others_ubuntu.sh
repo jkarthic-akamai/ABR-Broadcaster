@@ -1,5 +1,6 @@
 #!/bin/bash
 
+set -e
 sudo apt update
 sudo apt install -y v4l-utils libasound-dev yasm
 sudo apt install -y python

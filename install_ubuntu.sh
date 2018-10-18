@@ -1,5 +1,6 @@
 #!/bin/bash
 
+set -e
 install/others_linux.sh
 install/x264.sh
 install/ffmpeg.sh

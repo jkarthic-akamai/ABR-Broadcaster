@@ -1,5 +1,6 @@
 #!/bin/bash
 
+set -e
 if [ -d "ffmpeg" ]; then
 	cd ffmpeg
 	git pull
