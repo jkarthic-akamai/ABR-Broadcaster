@@ -28,16 +28,6 @@ sys.path.append(working_dir)
 import wc_utils as wc_utils
 import wc_capture as wc_capture
 
-def is_ffmpeg_internal():
-    version_query = "ffmpeg -version"
-    proc = subprocess.Popen(version_query, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    out, err = proc.communicate()
-    out_lines = out.splitlines()
-    if "ffmpeg version 3.1.1" in out_lines[0] :
-        return True
-    else :
-        return False
-
 def get_tee_url(output_url, enc_params):
 
     try:
@@ -140,17 +130,8 @@ def get_dash_mux_args(enc_params):
     dash_cmd += ':%s=%s' %('http_user_agent', enc_params['output']['user_agent'])
     dash_cmd += ':%s=%s' %('streaming', streaming)
     dash_cmd += ':%s=%s' %('index_correction', 1)
-    #TODO: temporary condition until all the patches are pushed to the main trunk
-    if is_ffmpeg_internal() :
-        dash_cmd += ':%s=%s' %('ignore_nw_error', 1)
-        dash_cmd += ':%s=%s' %('http_reconnect_delay', 1)
-    if is_ffmpeg_internal() :
-        dash_cmd += ':%s=%s' %('timeout', 500000)
-        dash_cmd += ':%s=\'%s\'' %('format_options', 'prft_box=pts')
-        dash_cmd += ':%s=%s' %('ack_timeout', 2)
-    else :
-        dash_cmd += ':%s=%s' %('timeout', 0.5)
-        dash_cmd += ':%s=\'%s\'' %('format_options', 'write_prft=pts')
+    dash_cmd += ':%s=%s' %('timeout', 0.5)
+    dash_cmd += ':%s=\'%s\'' %('format_options', 'write_prft=pts')
 
     if (segment_size < 8) :
         dash_cmd += ':%s=%s' %('http_persistent', 1)
@@ -186,18 +167,11 @@ def get_hls_mux_args(enc_params, hls_ingest_url):
             if enc_params['video']['enable_cc'] == 'on':
                 var_stream_map += ",ccgroup\:%s" %ccgroup_name
 
-    if is_ffmpeg_internal() :
-        hls_segment_filename = '%s/stream_%02d%02d%02d_%%d.ts' %\
-                               (ffmpeg_out_url.replace(':', '\:'),
-                                now.hour, now.minute, now.second)
-    else :
-        hls_segment_filename = '%s/variant_%%v/stream_%02d%02d%02d_%%d.ts' %\
-                               (ffmpeg_out_url.replace(':', '\:'),
-                                now.hour, now.minute, now.second)
+    hls_segment_filename = '%s/variant_%%v/stream_%02d%02d%02d_%%d.ts' %\
+                           (ffmpeg_out_url.replace(':', '\:'),
+                            now.hour, now.minute, now.second)
 
     hls_flags = 'program_date_time+round_durations'
-    if is_ffmpeg_internal() :
-        hls_flags += '+variants_in_subdir'
 
     hls_ts_options = 'mpegts_pmt_start_pid=480:mpegts_start_pid=481'
 
@@ -212,15 +186,7 @@ def get_hls_mux_args(enc_params, hls_ingest_url):
     hls_args += ':%s=\'%s\'' %('cc_stream_map', "ccgroup\:%s,instreamid\:CC1" %ccgroup_name)
     hls_args += ':%s=%s' %('master_pl_name', enc_params['output']['hls_master_manifest'])
     hls_args += ':%s=%s' %('master_pl_publish_rate', 100)
-    #TODO: temporary condition until all the patches are pushed to the main trunk
-    if is_ffmpeg_internal() :
-        hls_args += ':%s=%s' %('ignore_nw_error', 1)
-        hls_args += ':%s=%s' %('http_reconnect_delay', 1)
-    if is_ffmpeg_internal() :
-        hls_args += ':%s=%s' %('timeout', 500000)
-        hls_args += ':%s=%s' %('ack_timeout', 2)
-    else :
-        hls_args += ':%s=%s' %('timeout', 0.5)
+    hls_args += ':%s=%s' %('timeout', 0.5)
 
     if output_config['enable_abs_seg_path'] == 'on' :
         hls_args += ':%s=\'%s\'' %('hls_base_url',
@@ -314,29 +280,20 @@ def get_args(enc_params):
 
         ffmpeg_mux_args = get_hls_mux_args(enc_params, hls_ingest_url)
 
-        if is_ffmpeg_internal() :
-            ffmpeg_out_url = '%s/media.m3u8 ' %hls_ingest_url
-        else :
-            ffmpeg_out_url = '%s/variant_%%v/media.m3u8 ' %hls_ingest_url
+        ffmpeg_out_url = '%s/variant_%%v/media.m3u8 ' %hls_ingest_url
 
         ffmpeg_output_args +=  '"[%s]%s' %(ffmpeg_mux_args, ffmpeg_out_url)
         if enc_params['output']['b_ingest_url'] != '':
             hls_ingest_url = enc_params['output']['b_ingest_url']
 
             ffmpeg_mux_args = get_hls_mux_args(enc_params, hls_ingest_url)
-            if is_ffmpeg_internal() :
-                ffmpeg_out_url = '%s/media.m3u8 ' %hls_ingest_url
-            else :
-                ffmpeg_out_url = '%s/variant_%%v/media.m3u8 ' %hls_ingest_url
+            ffmpeg_out_url = '%s/variant_%%v/media.m3u8 ' %hls_ingest_url
             ffmpeg_output_args +=  '|[%s]%s' %(ffmpeg_mux_args, ffmpeg_out_url)
 
         hls_local_ingest_url   = get_tee_url(enc_params['output']['ingest_url'], enc_params)
         if hls_local_ingest_url != None:
             ffmpeg_mux_args = get_hls_mux_args(enc_params, hls_local_ingest_url)
-            if is_ffmpeg_internal() :
-                ffmpeg_output_args +=  '|[%s]%s/media.m3u8' %(ffmpeg_mux_args, hls_local_ingest_url)
-            else :
-                ffmpeg_output_args +=  '|[%s]%s/variant_%%v/media.m3u8' %(ffmpeg_mux_args, hls_local_ingest_url)
+            ffmpeg_output_args +=  '|[%s]%s/variant_%%v/media.m3u8' %(ffmpeg_mux_args, hls_local_ingest_url)
 
         ffmpeg_output_args +=  '"'
 
