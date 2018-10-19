@@ -131,7 +131,6 @@ def get_dash_mux_args(enc_params):
     dash_cmd += ':%s=%s' %('streaming', streaming)
     dash_cmd += ':%s=%s' %('index_correction', 1)
     dash_cmd += ':%s=%s' %('timeout', 0.5)
-    dash_cmd += ':%s=\'%s\'' %('format_options', 'write_prft=pts')
 
     if (segment_size < 8) :
         dash_cmd += ':%s=%s' %('http_persistent', 1)
