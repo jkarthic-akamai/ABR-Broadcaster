@@ -1,3 +1,4 @@
 .project
 .pydevproject
 wsgi-scripts/db/
+nasm-2.13.03

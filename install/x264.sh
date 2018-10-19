@@ -1,4 +1,14 @@
 #!/bin/bash
 
 set -e
-sudo apt install -y libx264-dev
+if [ -d "x264" ]; then
+  cd x264
+  git pull
+else
+  git clone http://git.videolan.org/git/x264.git
+  cd x264
+fi
+./configure --enable-shared
+make -j4
+sudo make install
+cd ..
