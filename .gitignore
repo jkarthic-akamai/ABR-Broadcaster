@@ -2,3 +2,6 @@
 .pydevproject
 wsgi-scripts/db/
 nasm-2.13.03
+x264
+ffmpeg
+wsgi_config.txt
