@@ -4,9 +4,10 @@ Adaptive Bitrate Broadcaster can be installed in Linux or macOS.
 
 The following softwares needs to be installed for Adaptive Bitrate Broadcaster to run properly
 - Xcode (only for macOS users)
-- V4L Utils and Libasound (only for Linux users)
+- YASM, V4L Utils and Libasound (only for Linux users)
 - Python 2.7.x
 - Python modules - mod_wsgi, webapp2, webob, psutil
+- nasm
 - libx264
 - ffmpeg 4.0 or above (configured with a x264 video encoder)
 - A webserver with WSGI support(Apache2 preferred)
@@ -42,6 +43,24 @@ The basic installation will install only your webcam as input capture device. If
 
 If you are some OS other than Ubuntu or if you need understand and control of the install steps then please follow the detailed but longer install procedure.
 
+## Get the source
+
+Get the source of ABR Broadcaster.
+
+```bash
+git clone https://github.com/jkarthic-akamai/ABR-Broadcaster
+cd ABR-Broadcaster
+```
+
+As a recommended procedure all the further commands in this guide should be executed from this `ABR-Broadcaster` folder. The present working directory where the ABR-Broadcaster is downloaded will be mentioned as ``<working directory>`` in this guide subsequently. All instances of ``<working directory>`` in this guide should be replaced with the correct path before using it.
+
+Say for the below example, ``<working directory>`` should be replaced by ``/home/akamai/ABR-Broadcaster``
+
+```bash
+$ pwd
+/home/akamai/ABR-Broadcaster
+```
+
 ## Xcode (macOS only)
 
 Full version of Xcode is required to be installed (not just the command line tools).
@@ -53,12 +72,12 @@ $ xcode-select -p
 
 If the above command returns ``/Applications/Xcode.app/Contents/Developer`` then it means the Xcode installation in successful.
 
-## V4L Utils and Libasound (Linux only)
+## YASM, V4L Utils and Libasound (Linux only)
 
-Install the V4L Utils and Libasound with the following command.
+Install the YASM, V4L Utils and Libasound with the following command.
 
 ```bash
-sudo apt install v4l-utils libasound-dev
+sudo apt install v4l-utils libasound-dev yasm
 ```
 
 ## Python
@@ -116,21 +135,18 @@ Run the following commands to install the required python module dependencies
 sudo pip install webapp2 webob psutil
 ```
 
-## nasm (macOS only)
+## nasm (macOS and Linux)
 
-Install brew and nasm with the following commands.
-
-```
-/usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
-brew install nasm
-```
-
-## yasm (Linux only)
-
-Install yasm with the following command.
+Run the following commands to download, build and install nasm-2.13.03.
 
 ```
-sudo apt install yasm
+curl -O https://www.nasm.us/pub/nasm/releasebuilds/2.13.03/nasm-2.13.03.tar.bz2
+tar -xvjf nasm-2.13.03.tar.bz2
+cd nasm-2.13.03
+./configure --prefix=/usr/local
+make -j4
+sudo make install
+cd ..
 ```
 
 ## libx264 (macOS and Linux)
@@ -142,6 +158,7 @@ cd x264
 ./configure --enable-shared
 make -j4
 sudo make install
+cd ..
 ```
 
 Alternatively on Ubuntu platforms x264 can be installed easily with the following command.
@@ -160,23 +177,7 @@ cd ffmpeg
 ./configure --enable-libx264 --enable-gpl
 make -j4
 sudo make install
-```
-
-## Adaptive Bitrate Broadcaster (macOS and Linux)
-
-Download the latest version of Adaptive Bitrate Broadcaster
-
-```bash
-$ git clone https://github.com/jkarthic-akamai/ABR-Broadcaster
-```
-
-The present working directory where the ABR-Broadcaster is downloaded will be mentioned as ``<working directory>`` in this guide subsequently. All instances of ``<working directory>`` in this guide should be replaced with the correct path before using it. 
-
-Say for the below example, ``<working directory>`` should be replaced by ``/home/akamai``
-
-```bash
-$ pwd
-/home/akamai
+cd ..
 ```
 
 ## Apache2 (Linux only)
@@ -228,36 +229,18 @@ Add the above two lines to ``/etc/apache2/httpd.conf``
 
 ## Add Directory (macOS and Linux)
 
-The directory in which ABR-Broadcaster was downloaded needs to be added to Apache's configuration with relevant permissions and settings. Add the following lines in `/etc/apache2/httpd.conf`(macOS) or `/etc/apache2/apache2.conf`(Ubuntu) to do the same.
-
-```
-<Directory "<working directory>/ABR-Broadcaster">
-  AllowOverride All
-  Options MultiViews FollowSymLinks
-  Require all granted
-</Directory>
-```
+The directory in which ABR-Broadcaster was downloaded needs to be added to Apache's configuration with relevant permissions and settings. Append the lines in `install/directory.conf` to `/etc/apache2/httpd.conf`(macOS) or `/etc/apache2/apache2.conf`(Ubuntu) after replacing `<working directory>` appropriately.
 
 ## Add Virtual Hosts (macOS and Linux)
 
-Let us add a Virtual Host with the host name ``broadcaster.local`` for ABR-Broadcaster. Add the following lines to `/etc/apache2/extra/httpd-vhosts.conf`(macOS) or `/etc/apache2/sites-enabled/000-default.conf`(Ubuntu).
-
-```
-<VirtualHost *:80>
-    DocumentRoot "<working directory>/ABR-Broadcaster/html"
-    WSGIScriptAlias /broadcaster <working directory>/ABR-Broadcaster/wsgi-scripts/wc_config_handler.py
-    ServerName broadcaster.local
-    ErrorLog "/var/log/apache2/broadcaster-error_log"
-    CustomLog "/var/log/apache2/broadcaster-access_log" common
-</VirtualHost>
-```
+Let us add a Virtual Host with the host name ``broadcaster.local`` for ABR-Broadcaster. Append the lines in `install/vhost.conf` to `/etc/apache2/extra/httpd-vhosts.conf`(macOS) or `/etc/apache2/sites-enabled/000-default.conf`(Ubuntu) after replacing `<working directory>` appropriately.
 
 ## Configuration Sub-Directory (macOS and Linux)
 
 We need to create a sub-directory for broadcaster's configuration information to be stored and edited by the WSGI web application. Run the following commands to achieve the same.
 
 ```
-cd <working directory>/ABR-Broadcaster
+cd <working directory>
 mkdir wsgi-scripts/db
 chmod 777 wsgi-scripts/db
 ```
