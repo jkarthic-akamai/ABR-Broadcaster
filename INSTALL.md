@@ -15,15 +15,26 @@ The below installation procedure is tested on macOS High Sierra, Ubuntu 14.04 an
 
 # Quick Install
 
-If you are using Ubuntu OS, then the `install_ubuntu.sh` script automates all the install steps. Just running that script will install all the required software and configure them.
+If you are using macOS or Ubuntu OS, then the `install_mac.sh` or `install_ubuntu.sh` script automates all the install steps respectively. Just running that script will install all the required software and configure them. Follow the below steps for quick install
 
 ```bash
 git clone https://github.com/jkarthic-akamai/ABR-Broadcaster
 cd ABR-Broadcaster
+```
+
+On Ubuntu OS run,
+
+```bash
 ./install_ubuntu.sh
 ```
 
-If the above scripts runs without any errors then it means ABR-Broadcaster is installed successfully in your system.
+On Mac OS run,
+
+```bash
+./install_mac.sh
+```
+
+If the above scripts runs without any errors then it means ABR-Broadcaster is installed successfully in your system. Read through [Usage Instructions](README.md#usage) for further steps.
 
 The basic installation will install only your webcam as input capture device. If you want to use a Decklink capture card for professional video capture then additionally follow the section [Decklink Capture Install](#decklink-capture-install).
 
