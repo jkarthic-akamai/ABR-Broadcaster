@@ -17,6 +17,12 @@ For example if the IP address of the ABR Broadcaster's machine is `172.24.50.1` 
 172.24.50.1       broadcaster.local
 ```
 
+If the web browser is opened in the same machine as where the ABR-machine is installed(say on a Laptop for example) then `127.0.0.1` IP address could be used for better ease of access.
+
+```
+127.0.0.1       broadcaster.local
+```
+
 Open the Virtual Host URL [http://broadcaster.local](http://broadcaster.local) in your Browser. The usage of the webpage should be simple and self explanatory.
 
 NOTE: If you are using any kind of VPN in your machine, it is recommended to disconnect the same when making the above changes to `/etc/hosts` file. Because some VPN clients overwrite your changes to `/etc/hosts` file during disconnect, as they try to restore the original `/etc/hosts` file. You can connect back to the VPN once the above changes are done.
