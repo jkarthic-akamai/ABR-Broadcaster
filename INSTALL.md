@@ -23,13 +23,13 @@ git clone https://github.com/jkarthic-akamai/ABR-Broadcaster
 cd ABR-Broadcaster
 ```
 
-On Ubuntu OS run,
+On Ubuntu OS run the following command and enter sudo password when prompted.
 
 ```bash
 ./install_ubuntu.sh
 ```
 
-On Mac OS run,
+On Mac OS run the following command and enter sudo password when prompted.
 
 ```bash
 ./install_mac.sh
