@@ -318,12 +318,6 @@ def start_encoder(enc_params):
     enc_params['input']['vid_framerate'] = vid_fr
     enc_params['input']['vid_scantype'] = scantype
 
-    if ((out_type == 'DASH' or out_type == 'CMAF') and
-        enc_params['output']['dash_chunked'] == 'on' and
-        enc_params['video']['num_b_frame'] != 0):
-        print 'Forcing number B frames to 0 for chunked mode '
-        enc_params['video']['num_b_frame'] = 0
-
     enc_params['output']['user_agent'] = USER_AGENT
     enc_params['output']['drawbox_width'] = 500
     enc_params['output']['drawbox_height'] = 88

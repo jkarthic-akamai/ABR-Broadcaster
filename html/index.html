@@ -27,13 +27,11 @@
             $("#muxed_av_specific_input").show();
             $("#enable_abs_seg_path_specific_input").show();
             $("#chunk_specific_input").hide();
-            $("#disable_bframes").show();
         } else if ((document.getElementById("out_type").value == "DASH") ||
                    (document.getElementById("out_type").value == "CMAF")) {
             $("#muxed_av_specific_input").hide();
             $("#enable_abs_seg_path_specific_input").hide();
             $("#chunk_specific_input").show();
-            display_disable_bframes_option();
         }
         show_backurl_url()
 	}
@@ -96,13 +94,6 @@
       return "Same as input";
     else
       return "Custom";
-  }
-  function display_disable_bframes_option() {
-    if (document.getElementsByName("dash_chunked")[0].checked == true) {
-      $("#disable_bframes").hide();
-    } else {
-      $("#disable_bframes").show();
-    }
   }
   function show_backurl_url() {
     var id = [];
@@ -254,7 +245,6 @@
     $("#out_type").bind('change', show_out_specific_fields);
     $("#set_backup_url").bind('change', show_out_specific_fields);
     $("#enable_abs_seg_path").bind('change', show_abs_seg_path_base_url);
-    $("#dash_chunked").bind('change', display_disable_bframes_option);
     update_status();
   });
 
@@ -967,7 +957,7 @@
             <span id="disable_bframes">
               <div class="form-group">
                 <div class="col-sm-offset-2 col-sm-6 checkbox">
-                    <label><input type="checkbox" name="disable_bframes">Disable 'B' frames</label>
+                    <label><input type="checkbox" name="disable_bframes" checked>Disable 'B' frames</label>
                 </div>
               </div>
             </span>
