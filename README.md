@@ -1,6 +1,6 @@
 # Adaptive Bitrate Broadcaster
 
-Adaptive Bitrate Broadcaster provides a simple interface for live encoders of audio and video streams for adaptive bitrate streaming over HTTP. It supports two most popular Adaptive Bitrate(ABR) protocols namely HLS and DASH. It provides two major method of interfaces.
+Adaptive Bitrate Broadcaster provides a simple interface for live encoders of audio and video streams for adaptive bitrate streaming over HTTP. It supports two most popular Adaptive Bitrate(ABR) protocols namely HLS and DASH. It provides two method of interfaces.
 - HTTP-based REST API interface.
 - Web based GUI
 
@@ -23,6 +23,13 @@ If the web browser is opened in the same machine as where the ABR-machine is ins
 127.0.0.1       broadcaster.local
 ```
 
+NOTE: If you are using any kind of VPN in your machine, it is recommended to disconnect the same when making the above changes to `/etc/hosts` file. Because some VPN clients overwrite your changes to `/etc/hosts` file during disconnect, as they try to restore the original `/etc/hosts` file. You can connect back to the VPN once the above changes are done.
+
+The broadcaster can be used either with Web GUI interface or with REST API interface.
+
+### Web GUI
 Open the Virtual Host URL [http://broadcaster.local](http://broadcaster.local) in your Browser. The usage of the webpage should be simple and self explanatory.
 
-NOTE: If you are using any kind of VPN in your machine, it is recommended to disconnect the same when making the above changes to `/etc/hosts` file. Because some VPN clients overwrite your changes to `/etc/hosts` file during disconnect, as they try to restore the original `/etc/hosts` file. You can connect back to the VPN once the above changes are done.
+### REST API interface
+
+Refer to the [API documentation](API.md) for details and examples of REST API based usage.
