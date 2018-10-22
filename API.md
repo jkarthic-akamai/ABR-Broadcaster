@@ -264,10 +264,13 @@ Video frame rate of input source
 
 # Start an encode instance
 
-*Path* : http://broadcaster.local/broadcaster/
-*Request Type* : POST
-*Request Body* : [Encoder Configuration JSON](#encoder-configuration) without [input status](#input-status) section
-*Examples* :
+**Path** : http://broadcaster.local/broadcaster/
+
+**Request Type** : POST
+
+**Request Body** : [Encoder Configuration JSON](#encoder-configuration) without [input status](#input-status) section
+
+**Examples** :
 
 ``` 
 curl -X POST http://broadcaster.local/broadcaster/ -d @<path-to-json-config-file>  --header "Content-Type: application/json"
@@ -276,9 +279,11 @@ curl -X POST http://broadcaster.local/broadcaster/ -d '{< json configuration >}'
 
 # Stop an encode instance
 
-*Path* : http://broadcaster.local/broadcaster/<input_id>
-*Request Type* : DELETE
-*Examples* :
+**Path** : http://broadcaster.local/broadcaster/<input_id>
+
+**Request Type** : DELETE
+
+**Examples** :
 
 ```
 curl -X DELETE http://broadcaster.local/broadcaster/0
@@ -286,9 +291,11 @@ curl -X DELETE http://broadcaster.local/broadcaster/0
 
 # Stop all encode instances
 
-*Path* : http://broadcaster.local/broadcaster/
-*Request Type* : DELETE
-*Examples* :
+**Path** : http://broadcaster.local/broadcaster/
+
+**Request Type** : DELETE
+
+**Examples** :
 
 ```
 curl -X DELETE http://broadcaster.local/broadcaster/
@@ -296,10 +303,13 @@ curl -X DELETE http://broadcaster.local/broadcaster/
 
 # Get encoder status for a input
 
-*Path* : http://broadcaster.local/broadcaster/<input_id>
-*Request Type* : GET
-*Response body* : [Encoder Configuration JSON](#encoder-configuration)
-*Examples* :
+**Path** : http://broadcaster.local/broadcaster/<input_id>
+
+**Request Type** : GET
+
+**Response body** : [Encoder Configuration JSON](#encoder-configuration)
+
+**Examples** :
 
 ```
 curl -X GET http://broadcaster.local/broadcaster/0
@@ -307,10 +317,13 @@ curl -X GET http://broadcaster.local/broadcaster/0
 
 # Get encoder status for all inputs
 
-*Path* : http://broadcaster.local/broadcaster/
-*Request Type* : GET
-*Response body* : JSON array of [Encoder Configurations](#encoder-configuration) within the key name `devices`
-*Examples* :
+**Path** : http://broadcaster.local/broadcaster/
+
+**Request Type** : GET
+
+**Response body** : JSON array of [Encoder Configurations](#encoder-configuration) within the key name `devices`
+
+**Examples** :
 
 ```
 curl -X GET http://broadcaster.local/broadcaster/
