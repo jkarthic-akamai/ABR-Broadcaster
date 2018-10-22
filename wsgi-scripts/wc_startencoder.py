@@ -98,13 +98,13 @@ def validate_encoder_params(encoder_params):
     max_video_height = 2160
 
     num_devices = capture.get_devices(False)
-    sdi_id = encoder_params['sdi_id']
+    input_id = encoder_params['input_id']
     out_type = encoder_params['output']['out_type']
 
     # TODO(Karthick) : Security RISK. More input validation needs to done here
-    if int(sdi_id) < 0 or \
-       int(sdi_id) > int(num_devices):
-        msg = 'Invalid sdi_id:' + str(sdi_id)
+    if int(input_id) < 0 or \
+       int(input_id) > int(num_devices):
+        msg = 'Invalid input_id:' + str(input_id)
         return False, msg
 
     if len(encoder_params['video']['variants']) <= 0:
@@ -241,7 +241,7 @@ def start_encoder(enc_params):
     response generation function.
     """
     default_config = {
-                  "sdi_id": "-1",
+                  "input_id": "-1",
                   "video": {
                       "speed_preset": "fast",
                       "rate_control": "cbr",
@@ -284,21 +284,21 @@ def start_encoder(enc_params):
         reason = 'Bad Request: ' + msg
         return 400, reason
 
-    sdi_id = str(enc_params['sdi_id'])
+    input_id = str(enc_params['input_id'])
     segment_size = wc_utils.to_int(enc_params['output']['segment_size'])
     out_type = enc_params['output']['out_type']
 
-    print 'Inside start_encoder.py sdi_id:' + str(enc_params['sdi_id'])
+    print 'Inside start_encoder.py input_id:' + str(enc_params['input_id'])
 
     #Kill any existing process
-    stopencoder.stop_encoder(sdi_id)
+    stopencoder.stop_encoder(input_id)
 
     #Store the json input in a file
     store_load_input_cfg.store_json_cfg(enc_params)
 
     enc_params['input'] = {}
-    enc_params['input']['input_interface'] = capture.get_input_interface(int(sdi_id))
-    enc_params['input']['inputurl'] = capture.get_inputurl(int(sdi_id))
+    enc_params['input']['input_interface'] = capture.get_input_interface(int(input_id))
+    enc_params['input']['inputurl'] = capture.get_inputurl(int(input_id))
 
     ffmpeg_format_args = ''
 
@@ -334,7 +334,7 @@ def start_encoder(enc_params):
     for n in range(0, len(enc_params['video']['variants'])):
 
         cfg = { 'TIME' : int(current_time),                                     #current time
-                'InputID' : int(sdi_id),                                        #Input ID
+                'InputID' : int(input_id),                                      #Input ID
                 'SubStreamID' : int(n),                                         #Substream ID
                 'ProcessID' : pid,                                              #ProcessID
                 'VidInWidth' : int(vid_w),                                      #Input video width

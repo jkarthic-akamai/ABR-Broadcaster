@@ -84,10 +84,10 @@ def remove_input_source(input_src_id=None):
         inp_src = configdb.get_config('CapInputNames', {'InputId': input_src_id})
 
     for i in range(0, len(inp_src)):
-        #Cannot remove SDI and v4l2 input source
+        #Cannot remove hardware input sources
         if inp_src[i]['InputInterface'].find(INPUT_INTERFACE_URL) == -1:
             if len(inp_src) == 1:
-                return 403, "Cannot remove SDI/v4l2 input source"
+                return 403, "Cannot remove SDI/v4l2/avfoundation input source"
             continue
 
         input_id = inp_src[i]['InputId']

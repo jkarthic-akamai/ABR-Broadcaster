@@ -66,7 +66,7 @@ def get_encoder_status(input_id=None, refresh_input=False):
 
         if stream_status == False:
             jrow = {
-                  "sdi_id": str(input_id),
+                  "input_id": str(input_id),
                   "video": {
                     "speed_preset": "",
                     "rate_control": "",

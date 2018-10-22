@@ -21,9 +21,9 @@ working_dir = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(working_dir)
 import wc_configdb
 
-def get_json_cfg_filename(sdi_id):
+def get_json_cfg_filename(input_id):
     json_dir = wc_configdb.get_config_path()
-    return json_dir + 'enc_%s.json'%(sdi_id)
+    return json_dir + 'enc_%s.json'%(input_id)
 
 def get_input_json_cfg_filename(input_id):
     json_dir = wc_configdb.get_config_path()
@@ -53,7 +53,7 @@ def get_all_input_json_cfgs():
 
 def store_json_cfg(enc_params):
     try:
-        filename = get_json_cfg_filename(enc_params['sdi_id'])
+        filename = get_json_cfg_filename(enc_params['input_id'])
         fp = open(filename, 'w')
         json.dump(enc_params, fp, indent=4)
         fp.close()
@@ -81,8 +81,8 @@ def read_json_cfg_from_file(filename):
         print e
         return {}
 
-def get_json_cfg(sdi_id):
-    filename = get_json_cfg_filename(sdi_id)
+def get_json_cfg(input_id):
+    filename = get_json_cfg_filename(input_id)
     enc_params = read_json_cfg_from_file(filename)
     return enc_params
 
@@ -91,9 +91,9 @@ def get_input_json_cfg(input_id):
     input_config = read_json_cfg_from_file(filename)
     return input_config
 
-def delete_json_cfg(sdi_id):
+def delete_json_cfg(input_id):
     try:
-        os.remove(get_json_cfg_filename(sdi_id))
+        os.remove(get_json_cfg_filename(input_id))
     except OSError:
         pass
 

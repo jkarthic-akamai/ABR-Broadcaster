@@ -195,7 +195,6 @@ def get_hls_mux_args(enc_params, hls_ingest_url):
 
 def get_args(enc_params):
 
-    sdi_id = str(enc_params['sdi_id'])
     out_type = enc_params['output']['out_type']
 
     if not 'tee_port' in enc_params['output']:
