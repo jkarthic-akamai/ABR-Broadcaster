@@ -83,7 +83,7 @@ def store_default_config(default_config, curr_config):
                 curr_config[key] = default_config[key]
 
 def validate_encoder_params(encoder_params):
-    min_video_bitrate = 500
+    min_video_bitrate = 200
     max_video_bitrate = 20000
 
     min_audio_bitrate = 32
