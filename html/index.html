@@ -335,16 +335,8 @@
       }
     }
 
-    enc_json.output.eth_interface = document.getElementById("prim_eth_interface").value;
-    enc_json.output.b_eth_interface = document.getElementById("backup_eth_interface").value;
-
-    //disabling eth selection
-    enc_json.output.eth_interface = "";
-    enc_json.output.b_eth_interface = "";
-
     if (false == document.getElementsByName("set_backup_url")[0].checked) {
       enc_json.output.b_ingest_url = "";
-      enc_json.output.b_eth_interface = "";
     }
 
     return JSON.stringify(enc_json, null, 2);
@@ -489,27 +481,6 @@
             refresh_input(event);
         }
     }
-    function update_eth_interface_dropdown(eth_if=[], id) {
-
-      var eth_list = document.getElementById(id);
-      while (eth_list.length > 0) {
-         eth_list.remove(0);
-      }
-
-      for(var i = 0; i < eth_if.length; i++) {
-        var eth = document.createElement('option');
-        eth.text = eth_if[i].name
-        eth.value = eth_if[i].name
-        eth_list.add(eth, 0);
-      }
-
-      // Hide dropdown menu if only one eth-interface is available
-      document.getElementById("eth_interface_grp").style.display = "";
-      if(eth_if.length < 2) {
-        document.getElementById("eth_interface_grp").style.display = "none";
-      }
-      document.getElementById("eth_interface_grp").style.display = "none"; //disabling eth selection
-    }
 
     function load_prev_configs(event) {
       var sub_stream_group = document.getElementById("sub_stream_group")
@@ -523,9 +494,6 @@
       if (aud_stream_group.childElementCount  <= 0) {
         add_aud_stream(event);
       }
-
-      update_eth_interface_dropdown(config.eth_interface_list, "prim_eth_interface");
-      update_eth_interface_dropdown(config.eth_interface_list, "backup_eth_interface");
 
       if (config.status == 'InActive') {
         return;
@@ -613,10 +581,6 @@
       document.getElementsByName("dash_chunked")[0].checked = false;
       if (config.output.dash_chunked == 'on') {
           document.getElementsByName("dash_chunked")[0].checked = true;
-      }
-
-      if (config.output.eth_interface != "") {
-        document.getElementById("prim_eth_interface").value = config.output.eth_interface;
       }
 
       document.getElementsByName("set_backup_url")[0].checked = false;
@@ -937,15 +901,6 @@
                 </div>
               </div>
             </span>
-            <div class="form-group" id="eth_interface_grp">
-              <label class="control-label col-sm-2" for="prim_eth_interface">Ethernet interface</label>
-              <div class="col-sm-10">
-                <select class="form-control" name="prim_eth_interface" id="prim_eth_interface">
-                </select>
-                <select class="form-control" name="backup_eth_interface" id="backup_eth_interface">
-                </select>
-              </div>
-            </div>
             <span id="enable_cc">
               <div class="form-group">
                 <div class="col-sm-offset-2 col-sm-6 checkbox">
