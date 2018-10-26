@@ -5,7 +5,7 @@ ABR Broadcaster provides REST-like API for the following tasks
 - Stop an encoding instance
 - Get status of all running instances
 
-This section will cover usage of these APIs with examples.
+This section will cover usage of these APIs with examples. In all the examples `172.24.50.1` is used as the IP address of ABR Broadcaster. Replace `172.24.50.1` with the actual IP address of the ABR Broadcaster, as per your network setup.
 
 # Encoder Configuration
 
@@ -264,7 +264,7 @@ Video frame rate of input source
 
 # Start an encode instance
 
-**Path** : http://broadcaster.local/broadcaster/
+**Path** : http://<ip address>:8888/broadcaster/
 
 **Request Type** : POST
 
@@ -273,37 +273,37 @@ Video frame rate of input source
 **Examples** :
 
 ``` 
-curl -X POST http://broadcaster.local/broadcaster/ -d @<path-to-json-config-file>  --header "Content-Type: application/json"
-curl -X POST http://broadcaster.local/broadcaster/ -d '{< json configuration >}'  --header "Content-Type: application/json"
+curl -X POST http://172.24.50.1:8888/broadcaster/ -d @<path-to-json-config-file>  --header "Content-Type: application/json"
+curl -X POST http://172.24.50.1:8888/broadcaster/ -d '{< json configuration >}'  --header "Content-Type: application/json"
 ```
 
 # Stop an encode instance
 
-**Path** : http://broadcaster.local/broadcaster/<input_id>
+**Path** : http://<ip address>:8888/broadcaster/<input_id>
 
 **Request Type** : DELETE
 
 **Examples** :
 
 ```
-curl -X DELETE http://broadcaster.local/broadcaster/0
+curl -X DELETE http://172.24.50.1:8888/broadcaster/0
 ```
 
 # Stop all encode instances
 
-**Path** : http://broadcaster.local/broadcaster/
+**Path** : http://<ip address>:8888/broadcaster/
 
 **Request Type** : DELETE
 
 **Examples** :
 
 ```
-curl -X DELETE http://broadcaster.local/broadcaster/
+curl -X DELETE http://172.24.50.1:8888/broadcaster/
 ```
 
 # Get encoder status for a input
 
-**Path** : http://broadcaster.local/broadcaster/<input_id>
+**Path** : http://<ip address>:8888/broadcaster/<input_id>
 
 **Request Type** : GET
 
@@ -312,12 +312,12 @@ curl -X DELETE http://broadcaster.local/broadcaster/
 **Examples** :
 
 ```
-curl -X GET http://broadcaster.local/broadcaster/0
+curl -X GET http://172.24.50.1:8888/broadcaster/0
 ```
 
 # Get encoder status for all inputs
 
-**Path** : http://broadcaster.local/broadcaster/
+**Path** : http://<ip address>:8888/broadcaster/
 
 **Request Type** : GET
 
@@ -326,7 +326,7 @@ curl -X GET http://broadcaster.local/broadcaster/0
 **Examples** :
 
 ```
-curl -X GET http://broadcaster.local/broadcaster/
+curl -X GET http://172.24.50.1:8888/broadcaster/
 ```
 
 # Conclusion

@@ -233,7 +233,7 @@ The directory in which ABR-Broadcaster was downloaded needs to be added to Apach
 
 ## Add Virtual Hosts (macOS and Linux)
 
-Let us add a Virtual Host with the host name ``broadcaster.local`` for ABR-Broadcaster. Append the lines in `install/vhost.conf` to `/etc/apache2/extra/httpd-vhosts.conf`(macOS) or `/etc/apache2/sites-enabled/000-default.conf`(Ubuntu) after replacing `<working directory>` appropriately.
+Let us add a Virtual Host for ABR-Broadcaster. Append the lines in `install/vhost.conf` to `/etc/apache2/extra/httpd-vhosts.conf`(macOS) or `/etc/apache2/sites-enabled/000-default.conf`(Ubuntu) after replacing `<working directory>` appropriately.
 
 ## Configuration Sub-Directory (macOS and Linux)
 
