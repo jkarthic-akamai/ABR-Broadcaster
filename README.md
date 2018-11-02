@@ -18,3 +18,7 @@ The usage of the webpage should be simple and self explanatory.
 ### REST API interface
 
 Refer to the [API documentation](API.md) for details and examples of REST API based usage.
+
+## Known Issues
+
+- Video codec `h264_videotoolbox` does not work resolutions 240p and below.
