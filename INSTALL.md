@@ -2,15 +2,8 @@
 
 Adaptive Bitrate Broadcaster can be installed in Linux or macOS.
 
-The following softwares needs to be installed for Adaptive Bitrate Broadcaster to run properly
-- Xcode (only for macOS users)
-- Curl, YASM, V4L Utils and Libasound (only for Linux users)
-- Python 2.7.x
-- Python modules - mod_wsgi, webapp2, webob, psutil
-- nasm
-- libx264
-- ffmpeg 4.0 or above (configured with a x264 video encoder)
-- A webserver with WSGI support(Apache2 preferred)
+The following software(s) needs to be installed for Adaptive Bitrate Broadcaster to run properly.
+- Xcode full version (only for macOS users). Also its license should have been accepted.
 
 The below installation procedure is tested on macOS High Sierra, Ubuntu 14.04 and Ubuntu 18.04. Some these steps might need a little modification if they don't work or apply for your OS version.
 

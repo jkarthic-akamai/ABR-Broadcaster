@@ -2,6 +2,16 @@
 
 We recommend usage of the quick install scripts explained in the default [INSTALL](INSTALL.md) document. But if you are on some OS other than Ubuntu, macOS or if you need understand and control of the install steps then please follow the detailed but longer install procedure explained below.
 
+The following additional software(s) will be installed as part of the steps explained below.
+- Xcode full version (only for macOS users)
+- Curl, YASM, V4L Utils and Libasound (only for Linux users)
+- Python 2.7.x
+- Python modules - mod_wsgi, webapp2, webob, psutil
+- nasm
+- libx264
+- ffmpeg 4.0 or above (configured with a x264 video encoder)
+- A webserver with WSGI support(Apache2 preferred)
+
 ## Get the source
 
 Get the source of ABR Broadcaster.
@@ -26,10 +36,15 @@ Full version of Xcode is required to be installed (not just the command line too
 Go to Apple app store and install the Xcode app. After installation is complete run the following command.
 
 ```bash
-$ xcode-select -p 
+$ xcode-select -p
 ```
 
 If the above command returns ``/Applications/Xcode.app/Contents/Developer`` then it means the Xcode installation in successful.
+Also one needs to "Accept" the Xcode license either from the UI or from running the below command.
+
+```bash
+$ sudo xcodebuild -license
+```
 
 ## YASM, V4L Utils and Libasound (Linux only)
 
