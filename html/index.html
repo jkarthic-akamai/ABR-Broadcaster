@@ -21,7 +21,7 @@
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
   <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
   <script>
-
+  var codecs;
     function show_out_specific_fields() {
         if (document.getElementById("out_type").value == "HLS") {
             $("#muxed_av_specific_input").show();
@@ -120,6 +120,7 @@
 	function populate_table(jsonData) {
         var all_devices = JSON.parse(jsonData);
         var num_devices = all_devices.devices.length
+    	codecs = all_devices.codecs
 
         // Deleting all rows expect 1st row with table info
         var table = document.getElementById("status_table");
@@ -283,6 +284,7 @@
     var num_sub_streams = sub_stream_group.childElementCount;
     for (var i = 0; i < num_sub_streams; i++) {
       enc_json.video.variants[i] = {}
+      enc_json.video.variants[i].codec = document.getElementById('video_codec' + i).value;
       enc_json.video.variants[i].bitrate = document.getElementById('video_bitrate' + i).value;
       if (document.getElementById('vid_out_res' + i).value == "Same as input") {
         enc_json.video.variants[i].video_width = "-1";
@@ -541,6 +543,7 @@
           add_substream(event);
         }
         var aud_tag = config.video.variants[i].audio_tag;
+        document.getElementById('video_codec' + i).value = config.video.variants[i].codec;
         document.getElementById('video_bitrate' + i).value = config.video.variants[i].bitrate;
         document.getElementById('vid_out_res' + i).value = get_resolution(config.video.variants[i].video_width,
                                                                           config.video.variants[i].video_height);
@@ -615,8 +618,23 @@
       av_params.class = "form-group";
       av_params.id = "av_params" + sub_stream_id;
 
+      var video_codec_div = document.createElement('div');
+      video_codec_div.className = "col-sm-2";
+      var video_codec_input = document.createElement("select");
+      video_codec_input.id = 'video_codec' + sub_stream_id;
+      video_codec_input.name = 'video_codec' + sub_stream_id;
+      video_codec_input.className = "form-control";
+      video_codec_div.appendChild(video_codec_input);
+
+      for (i in codecs){
+        var option = document.createElement('option');
+        option.text = codecs[i];
+        option.value = codecs[i];
+        video_codec_input.add(option);
+      }
+      
       var vid_br_div = document.createElement('div');
-      vid_br_div.className = "col-sm-3";
+      vid_br_div.className = "col-sm-2";
       var vid_br_input = document.createElement("input");
       vid_br_input.id = 'video_bitrate' + sub_stream_id;
       vid_br_input.name = 'video_bitrate' + sub_stream_id;
@@ -626,7 +644,7 @@
       vid_br_div.appendChild(vid_br_input);
 
       var vid_res_div = document.createElement('div');
-      vid_res_div.className = "col-sm-3";
+      vid_res_div.className = "col-sm-2";
       var vid_res_input = document.createElement("select");
       vid_res_input.className = "form-control";
       vid_res_input.name = 'vid_out_res' + sub_stream_id
@@ -671,6 +689,7 @@
       aud_name_input.className = "form-control";
       aud_br_div.appendChild(aud_name_input);
 
+      av_params.appendChild(video_codec_div);
       av_params.appendChild(vid_br_div);
       av_params.appendChild(vid_res_div);
       av_params.appendChild(vid_wd_div);
@@ -846,8 +865,9 @@
             <button type="button" onclick="rem_substream(this)"> - </button>
             <table style="width:100%">
               <tr>
-                <th class="col-sm-3" style="text-align: Center;font-size: 12px;">Video Bitrate (kbps)</th>
-                <th class="col-sm-3" style="text-align: Center;font-size: 12px;">Video Resolution</th>
+                <th class="col-sm-2" style="text-align: Center;font-size: 12px;">Video Codec</th>
+                <th class="col-sm-2" style="text-align: Center;font-size: 12px;">Video Bitrate (kbps)</th>
+                <th class="col-sm-2" style="text-align: Center;font-size: 12px;">Video Resolution</th>
                 <th class="col-sm-2" style="text-align: Center;font-size: 12px;">Width</th>
                 <th class="col-sm-2" style="text-align: Center;font-size: 12px;">Height</th>
                 <th class="col-sm-2" style="text-align: Center;font-size: 12px;">Audio Selection</th>

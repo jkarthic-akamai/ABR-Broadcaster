@@ -19,6 +19,7 @@ import json
 
 working_dir = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(working_dir)
+import wc_codecs as codecs
 import wc_process as process
 import wc_capture as capture
 import wc_configdb as configdb
@@ -103,6 +104,7 @@ def get_encoder_status(input_id=None, refresh_input=False):
 
     json_ret = {}
     json_ret['devices'] = jrows
+    json_ret['codecs'] = codecs.get_codecs()
 
     json_str = json.dumps(json_ret, indent = 4)
 

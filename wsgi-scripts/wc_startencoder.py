@@ -23,6 +23,7 @@ import json
 
 working_dir = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(working_dir)
+import wc_codecs as codecs
 import wc_capture as capture
 import wc_configdb as configdb
 import wc_stopencoder as stopencoder
@@ -115,7 +116,13 @@ def validate_encoder_params(encoder_params):
     num_aud_sub_streams = len(encoder_params['audio'])
 
     for n in range(0, num_vid_sub_streams):
-        vid_config = encoder_params['video']['variants'];
+        vid_config = encoder_params['video']['variants']
+
+        video_codec = vid_config[n]['codec']
+        if video_codec not in codecs.get_codecs():
+            msg = 'Selected codec ' + video_codec + ' not supported'
+            return False, msg
+
         video_bitrate = wc_utils.to_int(vid_config[n]['bitrate'])
 
         try:
@@ -249,6 +256,7 @@ def start_encoder(enc_params):
                       "num_b_frame":8,
                       "variants": [
                           {
+                            "codec": "libx264",
                             "bitrate": "-1",
                             "video_width": "-1",
                             "video_height": "-1",

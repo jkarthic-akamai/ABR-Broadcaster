@@ -45,6 +45,7 @@ def get_tee_url(output_url, enc_params):
 
 def get_vcodec_args(enc_params, osi):
     vid_config = enc_params['video']['variants']
+    video_codec = vid_config[osi]['codec']
     video_bitrate = wc_utils.to_int(vid_config[osi]['bitrate'])
     video_width = str(vid_config[osi]['video_width'])
     video_height = str(vid_config[osi]['video_height'])
@@ -63,7 +64,7 @@ def get_vcodec_args(enc_params, osi):
     else:
         vbv_bufsize = video_bitrate
 
-    args += ' -c:v%s libx264' % (postfix)
+    args += ' -c:v%s %s' % (postfix, video_codec)
     args += ' -pix_fmt%s yuv420p' % (postfix)
     args += ' -preset%s %s' % (postfix, enc_params['video']['speed_preset'])
 

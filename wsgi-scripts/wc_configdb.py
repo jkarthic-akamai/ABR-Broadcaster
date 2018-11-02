@@ -41,6 +41,10 @@ def init_config_db(path):
                                                    InputInterface)'
     c.execute(str(sql_create_cfg))
 
+    c.execute('DROP TABLE IF EXISTS Codecs')
+    sql_create_cfg = 'CREATE TABLE  Codecs (Name)'
+    c.execute(str(sql_create_cfg))
+
     c.execute('DROP TABLE IF EXISTS StreamConfig')
     sql_create_cfg = 'CREATE TABLE  StreamConfig \
                                             (TIME,\
