@@ -12,7 +12,7 @@ See [INSTALL.md](INSTALL.md) for installation instructions
 The broadcaster can be used either with Web GUI interface or with REST API interface. They listen on port 8888.
 
 ### Web GUI
-Open the Virtual Host URL http://<ip address>:8888 in your Browser. For example go to [http://127.0.0.1:8888](http://127.0.0.1:8888), when opening the browser from the same machine as ABR Broadcaster. Otherwise replace 127.0.0.1 with the IP address of the ABR Broadcaster.
+Open the Virtual Host URL http://ip_address:8888 in your Browser. For example go to [http://127.0.0.1:8888](http://127.0.0.1:8888), when opening the browser from the same machine as ABR Broadcaster. Otherwise replace 127.0.0.1 with the IP address of the ABR Broadcaster.
 The usage of the webpage should be simple and self explanatory.
 
 ### REST API interface
