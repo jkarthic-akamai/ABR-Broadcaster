@@ -22,4 +22,5 @@ else
   curl https://bootstrap.pypa.io/get-pip.py | sudo python
 fi
 
+sudo pip install webapp2 webob psutil
 sudo pip install mod_wsgi
