@@ -3,7 +3,13 @@
 Adaptive Bitrate Broadcaster can be installed in Linux or macOS.
 
 The following software(s) needs to be installed for Adaptive Bitrate Broadcaster to run properly.
-- Xcode full version (only for macOS users). Also its license should have been accepted.
+- Xcode full version (only for macOS users). Also its license should have been accepted from its UI or from the command line.
+To accept the Xcode license from command line run the the following commands.
+
+```bash
+sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
+sudo xcodebuild -license
+```
 
 The below installation procedure is tested on macOS High Sierra, Ubuntu 14.04 and Ubuntu 18.04. Some these steps might need a little modification if they don't work or apply for your OS version.
 

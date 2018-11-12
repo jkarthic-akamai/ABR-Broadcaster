@@ -4,7 +4,8 @@ set -e
 if xcode-select -p | grep -q '/Applications/Xcode.app/Contents/Developer'; then
   echo "Found Xcode installed.";
 else
-  echo "Full version of Xcode is required. Install it from Apple App store. Also 'Accept' Xcode license after installation ( sudo xcodebuild -license )";
+  echo "Full version of Xcode is required. Install it from Apple App store."
+  echo "Also 'Accept' Xcode license after installation, either from its UI or via command line."
   exit 1;
 fi
 
