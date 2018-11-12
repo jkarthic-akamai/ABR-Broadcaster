@@ -25,6 +25,10 @@ import wc_input_source as wc_input_source
 
 class EncHandler(webapp2.RequestHandler):
     os.environ['PATH'] = ':'.join([os.getenv('PATH'), '/usr/local/bin'])
+    if os.getenv('LD_LIBRARY_PATH'):
+        os.environ['LD_LIBRARY_PATH'] = ':'.join([os.getenv('LD_LIBRARY_PATH'), '/usr/local/lib'])
+    else:
+        os.environ['LD_LIBRARY_PATH'] = '/usr/local/lib'
     def get(self, inst_id=None):
 
         status_code, reason, resp_body = encoder_status.get_encoder_status(inst_id)
@@ -51,6 +55,10 @@ class EncHandler(webapp2.RequestHandler):
 
 class InputHandler(webapp2.RequestHandler):
     os.environ['PATH'] = ':'.join([os.getenv('PATH'), '/usr/local/bin'])
+    if os.getenv('LD_LIBRARY_PATH'):
+        os.environ['LD_LIBRARY_PATH'] = ':'.join([os.getenv('LD_LIBRARY_PATH'), '/usr/local/lib'])
+    else:
+        os.environ['LD_LIBRARY_PATH'] = '/usr/local/lib'
     def get(self):
         status_code, reason, resp_body = encoder_status.get_encoder_status(None, True)
         status = str(status_code) + ' ' + str(reason)
