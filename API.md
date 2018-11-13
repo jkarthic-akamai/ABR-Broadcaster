@@ -191,6 +191,7 @@ Flag to enable the muxing of audio and video into a single TS stream. Applicable
 ### ingest_url
 
 HTTP Ingest server URL. All the segments and playlist will be uploaded to this given URL using HTTP PUT/POST.
+It should be noted that this should be just the base URL. The manifest files will be internally named as master.m3u8 and out.mpd for HLS and DASH respectively
 
 *Valid Values* : A valid http URL
 
