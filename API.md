@@ -265,7 +265,7 @@ Video frame rate of input source
 
 # Start an encode instance
 
-**Path** : http://<ip address>:8888/broadcaster/
+**Path** : http://*ip_address*:8888/broadcaster/
 
 **Request Type** : POST
 
@@ -280,7 +280,7 @@ curl -X POST http://172.24.50.1:8888/broadcaster/ -d '{< json configuration >}' 
 
 # Stop an encode instance
 
-**Path** : http://<ip address>:8888/broadcaster/<input_id>
+**Path** : http://*ip_address*:8888/broadcaster/<input_id>
 
 **Request Type** : DELETE
 
@@ -292,7 +292,7 @@ curl -X DELETE http://172.24.50.1:8888/broadcaster/0
 
 # Stop all encode instances
 
-**Path** : http://<ip address>:8888/broadcaster/
+**Path** : http://*ip_address*:8888/broadcaster/
 
 **Request Type** : DELETE
 
@@ -304,7 +304,7 @@ curl -X DELETE http://172.24.50.1:8888/broadcaster/
 
 # Get encoder status for a input
 
-**Path** : http://<ip address>:8888/broadcaster/<input_id>
+**Path** : http://*ip_address*:8888/broadcaster/<input_id>
 
 **Request Type** : GET
 
@@ -318,7 +318,7 @@ curl -X GET http://172.24.50.1:8888/broadcaster/0
 
 # Get encoder status for all inputs
 
-**Path** : http://<ip address>:8888/broadcaster/
+**Path** : http://*ip_address*:8888/broadcaster/
 
 **Request Type** : GET
 
