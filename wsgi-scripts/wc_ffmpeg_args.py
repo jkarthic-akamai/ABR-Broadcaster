@@ -132,6 +132,7 @@ def get_dash_mux_args(enc_params):
     dash_cmd += ':%s=%s' %('streaming', streaming)
     dash_cmd += ':%s=%s' %('index_correction', 1)
     dash_cmd += ':%s=%s' %('timeout', 0.5)
+    dash_cmd += ':%s=%s' %('method', 'PUT')
 
     if (segment_size < 8) :
         dash_cmd += ':%s=%s' %('http_persistent', 1)
@@ -187,6 +188,7 @@ def get_hls_mux_args(enc_params, hls_ingest_url):
     hls_args += ':%s=%s' %('master_pl_name', enc_params['output']['hls_master_manifest'])
     hls_args += ':%s=%s' %('master_pl_publish_rate', 100)
     hls_args += ':%s=%s' %('timeout', 0.5)
+    hls_args += ':%s=%s' %('method', 'PUT')
 
     if output_config['enable_abs_seg_path'] == 'on' :
         hls_args += ':%s=\'%s\'' %('hls_base_url',
