@@ -308,6 +308,10 @@
     enc_json.output = {}
     enc_json.output.out_type = document.getElementById("out_type").value;
     enc_json.output.segment_size = document.getElementsByName("segment_size")[0].value;
+    enc_json.output.seg_in_subfolder = 'off';
+    if (true == document.getElementsByName("seg_in_subfolder")[0].checked) {
+      enc_json.output.seg_in_subfolder = 'on';
+    }
     enc_json.output.burn_tc = 'off';
     if (true == document.getElementsByName("burn_tc")[0].checked) {
       enc_json.output.burn_tc = 'on';
@@ -562,6 +566,10 @@
       document.getElementById("out_type").value = config.output.out_type;
       document.getElementsByName("segment_size")[0].value = config.output.segment_size;
 
+      document.getElementsByName("seg_in_subfolder")[0].checked = false;
+      if (config.output.seg_in_subfolder == 'on') {
+        document.getElementsByName("seg_in_subfolder")[0].checked = true;
+      }
       document.getElementsByName("burn_tc")[0].checked = false;
       if (config.output.burn_tc == 'on') {
         document.getElementsByName("burn_tc")[0].checked = true;
@@ -933,6 +941,13 @@
               <div class="form-group">
                 <div class="col-sm-offset-2 col-sm-6 checkbox">
                     <label><input type="checkbox" name="disable_bframes" checked>Disable 'B' frames</label>
+                </div>
+              </div>
+            </span>
+            <span id="seg_in_subfolder">
+              <div class="form-group">
+                <div class="col-sm-offset-2 col-sm-6 checkbox">
+                    <label><input type="checkbox" name="seg_in_subfolder" checked>Create segments in subfolders</label>
                 </div>
               </div>
             </span>

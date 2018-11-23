@@ -28,21 +28,6 @@ sys.path.append(working_dir)
 import wc_utils as wc_utils
 import wc_capture as wc_capture
 
-def get_tee_url(output_url, enc_params):
-
-    try:
-        out_url_regex = r'http\D*\:\/\/'
-        dst_port = enc_params['output']['tee_port']
-        if dst_port == 0:
-            return None
-
-        match = re.match(out_url_regex, output_url)
-        tee_url = 'http://127.0.0.1:' + str(dst_port) + '/' + \
-                     output_url[match.end():]
-        return tee_url
-    except:
-        return None
-
 def get_vcodec_args(enc_params, osi):
     vid_config = enc_params['video']['variants']
     video_codec = vid_config[osi]['codec']
@@ -114,9 +99,13 @@ def get_dash_mux_args(enc_params):
     now = datetime.datetime.now()
     curr_time = str(now.hour) +  str(now.minute) + str(now.second)
 
-    chunk_name = '%s/chunk-stream_t_\$RepresentationID\$-\$Number%%05d\$.m4s' %(curr_time)
+    if enc_params['output']['seg_in_subfolder'] == 'on' :
+        chunk_name = '%s/chunk-stream_\$RepresentationID\$-\$Number%%05d\$.m4s' %(curr_time)
+        init_seg_name = '%s/init-stream\$RepresentationID\$.m4s' %(curr_time)
+    else:
+        chunk_name = 'chunk-stream_%s_\$RepresentationID\$-\$Number%%05d\$.m4s' %(curr_time)
+        init_seg_name = 'init-stream_%s_\$RepresentationID\$.m4s' %(curr_time)
     chunk_name = chunk_name.replace(':', '\:')
-    init_seg_name = '%s/init-stream\$RepresentationID\$.m4s' %(curr_time)
     streaming = 0
     if enc_params['output']['dash_chunked'] == 'on':
         streaming = 1
@@ -168,9 +157,14 @@ def get_hls_mux_args(enc_params, hls_ingest_url):
             if enc_params['video']['enable_cc'] == 'on':
                 var_stream_map += ",ccgroup\:%s" %ccgroup_name
 
-    hls_segment_filename = '%s/variant_%%v/stream_%02d%02d%02d_%%d.ts' %\
-                           (ffmpeg_out_url.replace(':', '\:'),
-                            now.hour, now.minute, now.second)
+    if enc_params['output']['seg_in_subfolder'] == 'on' :
+        hls_segment_filename = '%s/variant_%%v/stream_%02d%02d%02d_%%d.ts' %\
+                               (ffmpeg_out_url.replace(':', '\:'),
+                                now.hour, now.minute, now.second)
+    else:
+        hls_segment_filename = '%s/stream_%02d%02d%02d_%%v_%%d.ts' %\
+                               (ffmpeg_out_url.replace(':', '\:'),
+                                now.hour, now.minute, now.second)
 
     hls_flags = 'program_date_time+round_durations'
 
@@ -277,29 +271,30 @@ def get_args(enc_params):
             ffmpeg_output_args += '-map 0:a? '
 
     if (out_type == 'HLS'):
-        hls_ingest_url = enc_params['output']['ingest_url']
+        hls_ingest_url = enc_params['output']['ingest_url'].rstrip('/')
 
         ffmpeg_mux_args = get_hls_mux_args(enc_params, hls_ingest_url)
 
-        ffmpeg_out_url = '%s/variant_%%v/media.m3u8 ' %hls_ingest_url
+        if enc_params['output']['seg_in_subfolder'] == 'on' :
+            ffmpeg_out_url = '%s/variant_%%v/media.m3u8 ' %hls_ingest_url
+        else:
+            ffmpeg_out_url = '%s/media_%%v.m3u8 ' %hls_ingest_url
 
         ffmpeg_output_args +=  '"[%s]%s' %(ffmpeg_mux_args, ffmpeg_out_url)
         if enc_params['output']['b_ingest_url'] != '':
-            hls_ingest_url = enc_params['output']['b_ingest_url']
+            hls_ingest_url = enc_params['output']['b_ingest_url'].rstrip('/')
 
             ffmpeg_mux_args = get_hls_mux_args(enc_params, hls_ingest_url)
-            ffmpeg_out_url = '%s/variant_%%v/media.m3u8 ' %hls_ingest_url
+            if enc_params['output']['seg_in_subfolder'] == 'on' :
+                ffmpeg_out_url = '%s/variant_%%v/media.m3u8 ' %hls_ingest_url
+            else:
+                ffmpeg_out_url = '%s/media_%%v.m3u8 ' %hls_ingest_url
             ffmpeg_output_args +=  '|[%s]%s' %(ffmpeg_mux_args, ffmpeg_out_url)
-
-        hls_local_ingest_url   = get_tee_url(enc_params['output']['ingest_url'], enc_params)
-        if hls_local_ingest_url != None:
-            ffmpeg_mux_args = get_hls_mux_args(enc_params, hls_local_ingest_url)
-            ffmpeg_output_args +=  '|[%s]%s/variant_%%v/media.m3u8' %(ffmpeg_mux_args, hls_local_ingest_url)
 
         ffmpeg_output_args +=  '"'
 
     elif (out_type == 'DASH' or out_type == 'CMAF'):
-        dash_ingest_url  = enc_params['output']['ingest_url']
+        dash_ingest_url  = enc_params['output']['ingest_url'].rstrip('/')
 
         ffmpeg_mux_args   = get_dash_mux_args(enc_params)
         ffmpeg_out_url = '%s/%s ' %(dash_ingest_url,\
@@ -307,19 +302,12 @@ def get_args(enc_params):
         ffmpeg_output_args +=  '"[%s]%s' %(ffmpeg_mux_args, ffmpeg_out_url)
 
         if enc_params['output']['b_ingest_url'] != '':
-            dash_ingest_url  = enc_params['output']['b_ingest_url']
+            dash_ingest_url  = enc_params['output']['b_ingest_url'].rstrip('/')
 
             ffmpeg_mux_args   = get_dash_mux_args(enc_params)
             ffmpeg_out_url = '%s/%s ' %(dash_ingest_url,\
                                         enc_params['output']['dash_master_manifest'])
             ffmpeg_output_args +=  '|[%s]%s' %(ffmpeg_mux_args, ffmpeg_out_url)
-
-        dash_local_ingest_url  = get_tee_url(enc_params['output']['ingest_url'], enc_params)
-        if dash_local_ingest_url != None:
-            ffmpeg_mux_args   = get_dash_mux_args(enc_params)
-            local_ingest_url = '%s/%s ' %(dash_local_ingest_url,\
-                                    enc_params['output']['dash_master_manifest'])
-            ffmpeg_output_args +=  '|[%s]%s' %(ffmpeg_mux_args, local_ingest_url)
 
         ffmpeg_output_args +=  '"'
 

@@ -213,6 +213,10 @@ def validate_encoder_params(encoder_params):
             return False, msg
         if not encoder_params['output']['abs_seg_path_base_url'].endswith('/'):
             encoder_params['output']['abs_seg_path_base_url'] += '/'
+    if (encoder_params['output']['seg_in_subfolder'] != 'on') and \
+       (encoder_params['output']['seg_in_subfolder'] != 'off'):
+        msg = ' Invalid  seg_in_subfolder flag ' + str(encoder_params['output']['seg_in_subfolder'])
+        return False, msg
 
     if (out_type != 'HLS') and (out_type != 'DASH') and \
        (out_type != 'CMAF'):
@@ -277,6 +281,7 @@ def start_encoder(enc_params):
                     "create_muxed_av": "off",
                     "enable_abs_seg_path": "off",
                     "abs_seg_path_base_url": "",
+                    "seg_in_subfolder": "off",
                     "ingest_url": "",
                     "b_ingest_url":"",
                     "dash_chunked": "off",

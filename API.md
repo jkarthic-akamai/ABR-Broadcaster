@@ -180,6 +180,14 @@ Segment duration in seconds.
 
 *Type* : Integer
 
+### seg_in_subfolder
+
+Flag to create segments in subfolders.
+
+*Valid Values* : `on`, `off`
+
+*Type* : String
+
 ### create\_muxed\_av
 
 Flag to enable the muxing of audio and video into a single TS stream. Applicable only when `out_type` is `HLS`
