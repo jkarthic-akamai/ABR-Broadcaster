@@ -22,7 +22,7 @@ sys.path.append(working_dir)
 import wc_configdb as configdb
 
 def refresh_codecs():
-    supported_codecs_list = ['libx264', 'h264_videotoolbox', 'libx265']
+    supported_codecs_list = ['libx264', 'h264_videotoolbox', 'libvpx-vp9', 'libx265']
     device_name_query = "ffmpeg -encoders"
     proc = subprocess.Popen(device_name_query, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     out, err = proc.communicate()

@@ -28,6 +28,28 @@ sys.path.append(working_dir)
 import wc_utils as wc_utils
 import wc_capture as wc_capture
 
+def x264_preset_to_vp9_cpu_used(preset):
+    if preset == 'slower':
+        cpu_used = 0
+    elif preset == 'slow':
+        cpu_used = 1
+    elif preset == 'medium':
+        cpu_used = 2
+    elif preset == 'fast':
+        cpu_used = 3
+    elif preset == 'faster':
+        cpu_used = 4
+    elif preset == 'veryfast':
+        cpu_used = 5
+    elif preset == 'superfast':
+        cpu_used = 6
+    elif preset == 'ultrafast':
+        cpu_used = 7
+    else: #default
+        cpu_used = 2
+
+    return cpu_used
+
 def get_vcodec_args(enc_params, osi):
     vid_config = enc_params['video']['variants']
     video_codec = vid_config[osi]['codec']
@@ -51,33 +73,33 @@ def get_vcodec_args(enc_params, osi):
 
     args += ' -c:v%s %s' % (postfix, video_codec)
     args += ' -pix_fmt%s yuv420p' % (postfix)
-    args += ' -preset%s %s' % (postfix, enc_params['video']['speed_preset'])
 
     cc_flag = 0
     if enc_params['video']['enable_cc'] == 'on':
         cc_flag = 1
-    args += ' -a53cc%s %d' % (postfix, cc_flag)
 
-    args += ' -b:v%s %sk -bufsize%s %sk -nal-hrd%s %s ' % \
-            (postfix, video_bitrate, postfix, vbv_bufsize, postfix, enc_params['video']['rate_control'])
+    if (video_codec == 'libx264'):
+        args += ' -preset%s %s' % (postfix, enc_params['video']['speed_preset'])
+        args += ' -a53cc%s %d -nal-hrd%s %s -x264opts%s scenecut=-1:rc_lookahead=0' % \
+                (postfix, cc_flag, postfix, enc_params['video']['rate_control'], postfix)
+        if psutil.cpu_count() > 8 :
+            args += ':threads=12'
+    elif (video_codec == 'libvpx-vp9'):
+        cpu_used = x264_preset_to_vp9_cpu_used(enc_params['video']['speed_preset'])
+        args += ' -deadline%s realtime -cpu-used%s %d -tile-columns%s 4'\
+                ' -frame-parallel%s 1 -threads%s 8 -static-thresh%s 0 -lag-in-frames%s 0 ' % \
+                (postfix, postfix, cpu_used, postfix, postfix, postfix, postfix, postfix)
+
+    args += ' -b:v%s %sk -bufsize%s %sk' % \
+            (postfix, video_bitrate, postfix, vbv_bufsize)
 
     if (video_width != '-1' and video_height != '-1') :
         args += ' -s%s ' %postfix + video_width + 'x' + video_height + ' '
 
-    if 'profile' in vid_config[osi]:
-        args += ' -profile:v%s %s '%(postfix, vid_config[osi]['profile'])
+    args += '-force_key_frames%s "expr:gte(t,n_forced*%s)" -bf%s %d' % \
+            (postfix, enc_params['output']['segment_size'],\
+             postfix, int(enc_params['video']['num_b_frame']))
 
-    if 'level' in vid_config[osi]:
-        args += ' -level%s %s '%(postfix, vid_config[osi]['level'])
-
-    if 'idr_interval' in vid_config[osi]:
-        args += ' -x264-params%s keyint=%s:forced-key=1 '%(postfix, vid_config[osi]['idr_interval'])
-
-    args += '-force_key_frames%s "expr:gte(t,n_forced*%s)"  -bf%s %d -x264opts%s scenecut=-1:rc_lookahead=0' % \
-            (postfix, enc_params['output']['segment_size'], postfix, \
-             int(enc_params['video']['num_b_frame']), postfix)
-    if psutil.cpu_count() > 8 :
-        args += ':threads=12'
     args += ' '
     return args
 
@@ -100,11 +122,11 @@ def get_dash_mux_args(enc_params):
     curr_time = str(now.hour) +  str(now.minute) + str(now.second)
 
     if enc_params['output']['seg_in_subfolder'] == 'on' :
-        chunk_name = '%s/chunk-stream_\$RepresentationID\$-\$Number%%05d\$.m4s' %(curr_time)
-        init_seg_name = '%s/init-stream\$RepresentationID\$.m4s' %(curr_time)
+        chunk_name = '%s/chunk-stream_\$RepresentationID\$-\$Number%%05d\$.\$ext\$' %(curr_time)
+        init_seg_name = '%s/init-stream\$RepresentationID\$.\$ext\$' %(curr_time)
     else:
-        chunk_name = 'chunk-stream_%s_\$RepresentationID\$-\$Number%%05d\$.m4s' %(curr_time)
-        init_seg_name = 'init-stream_%s_\$RepresentationID\$.m4s' %(curr_time)
+        chunk_name = 'chunk-stream_%s_\$RepresentationID\$-\$Number%%05d\$.\$ext\$' %(curr_time)
+        init_seg_name = 'init-stream_%s_\$RepresentationID\$.\$ext\$' %(curr_time)
     chunk_name = chunk_name.replace(':', '\:')
     streaming = 0
     if enc_params['output']['dash_chunked'] == 'on':
@@ -121,6 +143,7 @@ def get_dash_mux_args(enc_params):
     dash_cmd += ':%s=%s' %('streaming', streaming)
     dash_cmd += ':%s=%s' %('index_correction', 1)
     dash_cmd += ':%s=%s' %('timeout', 0.5)
+    dash_cmd += ':%s=%s' %('dash_segment_type', 'mp4')
     dash_cmd += ':%s=%s' %('method', 'PUT')
 
     if (segment_size < 8) :

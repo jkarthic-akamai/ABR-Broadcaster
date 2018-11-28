@@ -3,5 +3,6 @@
 wsgi-scripts/db/
 nasm-2.13.03
 x264
+libvpx
 ffmpeg
 wsgi_config.txt
