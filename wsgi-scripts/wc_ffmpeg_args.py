@@ -96,7 +96,7 @@ def get_vcodec_args(enc_params, osi):
     if (video_width != '-1' and video_height != '-1') :
         args += ' -s%s ' %postfix + video_width + 'x' + video_height + ' '
 
-    args += '-force_key_frames%s "expr:gte(t,n_forced*%s)" -bf%s %d' % \
+    args += ' -force_key_frames%s "expr:gte(t,n_forced*%s)" -bf%s %d' % \
             (postfix, enc_params['output']['segment_size'],\
              postfix, int(enc_params['video']['num_b_frame']))
 
@@ -145,6 +145,7 @@ def get_dash_mux_args(enc_params):
     dash_cmd += ':%s=%s' %('timeout', 0.5)
     dash_cmd += ':%s=%s' %('dash_segment_type', 'mp4')
     dash_cmd += ':%s=%s' %('method', 'PUT')
+    dash_cmd += ':%s=%s' %('ignore_io_errors', '1')
 
     if (segment_size < 8) :
         dash_cmd += ':%s=%s' %('http_persistent', 1)
