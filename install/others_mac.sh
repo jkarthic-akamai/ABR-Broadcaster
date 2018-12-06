@@ -16,7 +16,7 @@ else
   exit 1;
 fi
 
-if type pip; then
+if pip --version 2>&1 | grep -q '18.'; then
   echo "Found pip";
 else
   echo "Installing pip";
