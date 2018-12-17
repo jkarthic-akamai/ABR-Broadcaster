@@ -207,6 +207,7 @@ def get_hls_mux_args(enc_params, hls_ingest_url):
     hls_args += ':%s=%s' %('master_pl_publish_rate', 100)
     hls_args += ':%s=%s' %('timeout', 0.5)
     hls_args += ':%s=%s' %('method', 'PUT')
+    hls_args += ':%s=%s' %('ignore_io_errors', '1')
 
     if output_config['enable_abs_seg_path'] == 'on' :
         hls_args += ':%s=\'%s\'' %('hls_base_url',
