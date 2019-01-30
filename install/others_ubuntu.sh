@@ -2,7 +2,7 @@
 
 set -e
 sudo apt update
-sudo apt install -y v4l-utils libasound-dev yasm curl
+sudo apt install -y v4l-utils libasound-dev yasm curl alsa-utils
 sudo apt install -y python
 sudo apt install -y python-pip
 sudo pip install webapp2 webob psutil

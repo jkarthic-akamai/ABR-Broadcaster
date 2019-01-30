@@ -124,6 +124,23 @@ def get_decklink_devices():
     return num_devices
 
 def get_v4l2_devices():
+    audio_query = "arecord -l"
+    proc = subprocess.Popen(audio_query, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    out, err = proc.communicate()
+    err_lines = out.splitlines()
+    audio_regex = '(^card\s)(\d)(:.*device\s)(\d)(:.*)'
+    r = re.compile(audio_regex)
+    audio_device = ''
+    for line in err_lines:
+        match = r.search(line)
+        if match:
+            print ('Audio Card found')
+            groups = match.groups()
+            audio_device = groups[1] + ',' + groups[3]
+            break;
+    if audio_device == '':
+        print ('Audio Card NOT found')
+        return 0
     # Auto detect the device name(s) from v4l2-ctl logs..Expecting output in the following format
     # ...
     # /dev/video0
@@ -140,7 +157,7 @@ def get_v4l2_devices():
             input_config = {
                   "input": {
                     "input_interface": INPUT_INTERFACE_V4L2,
-                    "input_url": line[idx:] + ' -f alsa -i default'
+                    "input_url": line[idx:] + ' -f alsa -i hw:' + audio_device
                    }
                 }
             add_input_source(input_config)
