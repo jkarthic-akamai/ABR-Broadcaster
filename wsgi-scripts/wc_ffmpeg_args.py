@@ -147,6 +147,9 @@ def get_dash_mux_args(enc_params):
     dash_cmd += ':%s=%s' %('method', 'PUT')
     dash_cmd += ':%s=%s' %('ignore_io_errors', '1')
 
+    if enc_params['output']['lhls'] == 'on':
+        dash_cmd += ':%s=%s' %('lhls', '1')
+
     if (segment_size < 8) :
         dash_cmd += ':%s=%s' %('http_persistent', 1)
     if (enc_params['output']['out_type'] == 'CMAF'):
@@ -284,6 +287,9 @@ def get_args(enc_params):
             audio_codec = enc_params['audio'][aud_tag]['codec']
             ffmpeg_output_args += get_acodec_args(aud_id, audio_codec,
                                                   audio_bitrate)
+
+    if enc_params['output']['lhls'] == 'on':
+        ffmpeg_output_args += ' -strict experimental'
 
     ffmpeg_output_args += ' -f tee '
 

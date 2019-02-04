@@ -27,11 +27,17 @@
             $("#muxed_av_specific_input").show();
             $("#enable_abs_seg_path_specific_input").show();
             $("#chunk_specific_input").hide();
+            $("#lhls_specific_input").hide();
         } else if ((document.getElementById("out_type").value == "DASH") ||
                    (document.getElementById("out_type").value == "CMAF")) {
             $("#muxed_av_specific_input").hide();
             $("#enable_abs_seg_path_specific_input").hide();
             $("#chunk_specific_input").show();
+            if (document.getElementById("out_type").value == "CMAF") {
+                $("#lhls_specific_input").show();
+            } else {
+                $("#lhls_specific_input").hide();
+            }
         }
         show_backurl_url()
 	}
@@ -341,6 +347,13 @@
       }
     }
 
+    if ("CMAF" == enc_json.output.out_type) {
+      enc_json.output.lhls = 'off';
+      if (true == document.getElementsByName("lhls")[0].checked) {
+          enc_json.output.lhls = 'on';
+      }
+    }
+
     if (false == document.getElementsByName("set_backup_url")[0].checked) {
       enc_json.output.b_ingest_url = "";
     }
@@ -592,6 +605,11 @@
       document.getElementsByName("dash_chunked")[0].checked = false;
       if (config.output.dash_chunked == 'on') {
           document.getElementsByName("dash_chunked")[0].checked = true;
+      }
+
+      document.getElementsByName("lhls")[0].checked = false;
+      if (config.output.lhls == 'on') {
+          document.getElementsByName("lhls")[0].checked = true;
       }
 
       document.getElementsByName("set_backup_url")[0].checked = false;
@@ -982,6 +1000,13 @@
               <div class="form-group">
                 <div class="col-sm-offset-2 col-sm-5 checkbox">
                     <label><input type="checkbox" name="dash_chunked" id="dash_chunked" checked> Chunked HTTP output</label>
+                </div>
+              </div>
+            </span>
+            <span id="lhls_specific_input">
+              <div class="form-group">
+                <div class="col-sm-offset-2 col-sm-5 checkbox">
+                    <label><input type="checkbox" name="lhls" id="lhls">LHLS (Experimental)</label>
                 </div>
               </div>
             </span>

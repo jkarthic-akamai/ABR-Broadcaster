@@ -242,6 +242,15 @@ def validate_encoder_params(encoder_params):
             msg = ' Invalid  dash_chunked flag ' + str(encoder_params['output']['dash_chunked'])
             return False, msg
 
+    if out_type == 'CMAF':
+        if (encoder_params['output']['lhls'] != 'on') and \
+           (encoder_params['output']['lhls'] != 'off'):
+            msg = ' Invalid  LHLS flag ' + str(encoder_params['output']['lhls'])
+            return False, msg
+    else:
+        if (encoder_params['output']['lhls'] != 'off'):
+            msg = ' Invalid  LHLS flag ' + str(encoder_params['output']['lhls'])
+            return False, msg
     return True, ''
 
 def start_encoder(enc_params):
@@ -285,6 +294,7 @@ def start_encoder(enc_params):
                     "ingest_url": "",
                     "b_ingest_url":"",
                     "dash_chunked": "off",
+                    "lhls": "off",
                     "hls_master_manifest" : "master.m3u8",
                     "dash_master_manifest" : "out.mpd"
                   },
