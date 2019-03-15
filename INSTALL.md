@@ -42,7 +42,9 @@ The basic installation will install only your webcam as input capture device. If
 
 To use a Decklink SDI-input capture card for professional video capture, follow the below steps.
 
-- The Decklink drivers and the SDK are two separate packages. Download it from the BlackMagicDesign's offical [site](https://www.blackmagicdesign.com/in/support/family/capture-and-playback). Download the latest versions for `Desktop Video` and `Desktop Video SDK`
+- The Decklink drivers and the SDK are two separate packages. Download it from the BlackMagicDesign's official [site](https://www.blackmagicdesign.com/in/support/family/capture-and-playback). Download the 10.11.x versions for `Desktop Video` and `Desktop Video SDK`
+
+- ffmpeg doesn't work with BlackMagic SDK 11.0. Till the [issue](https://trac.ffmpeg.org/ticket/7789) is resolved, it is not recommended to use the BlackMagic SDK 11.0 SDK.
 
 - Uncompress the `Desktop Video` package. For example
 
