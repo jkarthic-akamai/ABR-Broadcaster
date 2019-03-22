@@ -4,6 +4,7 @@ set -e
 if [ -d "ffmpeg" ]; then
 	cd ffmpeg
 	git pull
+	make distclean
 else
 	git clone https://git.ffmpeg.org/ffmpeg.git
 	cd ffmpeg

@@ -4,6 +4,7 @@ set -e
 if [ -d "libvpx" ]; then
   cd libvpx
   git pull
+  make distclean
 else
   git clone https://chromium.googlesource.com/webm/libvpx/
   cd libvpx
