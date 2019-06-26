@@ -325,16 +325,17 @@ def start_encoder(enc_params):
 
     ffmpeg_format_args = ''
 
-    if enc_params['input']['input_interface'] == capture.INPUT_INTERFACE_URL:
-        ffmpeg_format_args += ' -timeout 1000000 -analyzeduration 5000000 '
-    else:
-        ffmpeg_format_args += ' -probesize 10M -f ' + enc_params['input']['input_interface']
+    ffmpeg_format_args += ' -probesize 10M -f ' + enc_params['input']['input_interface']
 
     ffmpeg_format_args += ' -i %s' %(enc_params['input']['inputurl'])
 
-    vid_w, vid_h, vid_fr, scantype, device_status = capture.find_input_format(ffmpeg_proc_name + ffmpeg_format_args)
-    if device_status != 'Active':
-        print 'Input signal detection failed: ' + str(device_status)
+    if enc_params['input']['input_interface'] == capture.INPUT_INTERFACE_URL:
+        vid_w = vid_h = vid_fr = 0
+        scantype = device_status = ''
+    else:
+        vid_w, vid_h, vid_fr, scantype, device_status = capture.find_input_format(ffmpeg_proc_name + ffmpeg_format_args)
+        if device_status != 'Active':
+            print 'Input signal detection failed: ' + str(device_status)
 
     enc_params['input']['vid_width'] = vid_w
     enc_params['input']['vid_height'] = vid_h

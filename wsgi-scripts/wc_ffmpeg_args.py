@@ -234,6 +234,8 @@ def get_args(enc_params):
     else:
         if (urlparse.urlparse(enc_params['input']['inputurl']).scheme == 'file'):
             ffmpeg_input_args += ' -re '
+        elif (urlparse.urlparse(enc_params['input']['inputurl']).scheme == 'rtmp'):
+            ffmpeg_input_args += ' -listen 1 '
 
     if enc_params['input']['input_interface'] == wc_capture.INPUT_INTERFACE_DECKLINK :
         '''

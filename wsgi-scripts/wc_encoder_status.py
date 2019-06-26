@@ -43,10 +43,7 @@ def get_encoder_status(input_id=None, refresh_input=False):
         input_id = inp_src[i]['InputId']
         input_interface = inp_src[i]['InputInterface']
 
-        if input_interface == capture.INPUT_INTERFACE_URL:
-            ffmpeg_format_args = ' -timeout 1000000 -analyzeduration 5000000 '
-        else:
-            ffmpeg_format_args = ' -probesize 10M -f ' + input_interface
+        ffmpeg_format_args = ' -probesize 10M -f ' + input_interface
 
         ffmpeg_format_args += ' -i '
 
@@ -90,7 +87,11 @@ def get_encoder_status(input_id=None, refresh_input=False):
 
             jrow['input'] = {}
             inputurl = capture.get_inputurl(input_id)
-            vid_w, vid_h, vid_fr, scantype, device_status = capture.find_input_format(ffmpeg_cmd + ffmpeg_format_args + inputurl)
+            if input_interface == capture.INPUT_INTERFACE_URL:
+                vid_w = vid_h = vid_fr = 0
+                scantype = device_status = ''
+            else:
+                vid_w, vid_h, vid_fr, scantype, device_status = capture.find_input_format(ffmpeg_cmd + ffmpeg_format_args + inputurl)
             jrow['input']['status'] = device_status
             jrow['input']['width'] = str(vid_w)
             jrow['input']['height'] = str(vid_h)
