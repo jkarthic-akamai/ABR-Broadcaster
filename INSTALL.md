@@ -11,7 +11,7 @@ sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
 sudo xcodebuild -license
 ```
 
-The below installation procedure is tested on macOS High Sierra, Ubuntu 14.04 and Ubuntu 18.04. Some these steps might need a little modification if they don't work or apply for your OS version.
+The below installation procedure is tested on macOS High Sierra and Ubuntu 18.04. Some these steps might need a little modification if they don't work or apply for your OS version.
 
 # Quick Install
 
