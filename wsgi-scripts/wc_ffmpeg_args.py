@@ -138,7 +138,10 @@ def get_dash_mux_args(enc_params):
     dash_cmd += ':%s=\'%s\'' %('init_seg_name', init_seg_name)
     dash_cmd += ':%s=%s' %('min_seg_duration', int(segment_size)*1000000)
     dash_cmd += ':%s=%s' %('window_size', 3)
-    dash_cmd += ':%s=%s' %('use_timeline', 0)
+    if enc_params['output']['dash_segtimeline'] == 'on':
+        dash_cmd += ':%s=%s' %('use_timeline', 1)
+    else:
+        dash_cmd += ':%s=%s' %('use_timeline', 0)
     dash_cmd += ':%s=%s' %('http_user_agent', enc_params['output']['user_agent'])
     dash_cmd += ':%s=%s' %('streaming', streaming)
     dash_cmd += ':%s=%s' %('index_correction', 1)
