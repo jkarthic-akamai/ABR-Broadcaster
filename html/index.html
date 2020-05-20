@@ -28,11 +28,13 @@
             $("#enable_abs_seg_path_specific_input").show();
             $("#chunk_specific_input").hide();
             $("#lhls_specific_input").hide();
+            $("#segment_timeline_input").hide();
         } else if ((document.getElementById("out_type").value == "DASH") ||
                    (document.getElementById("out_type").value == "CMAF")) {
             $("#muxed_av_specific_input").hide();
             $("#enable_abs_seg_path_specific_input").hide();
             $("#chunk_specific_input").show();
+            $("#segment_timeline_input").show();
             if (document.getElementById("out_type").value == "CMAF") {
                 $("#lhls_specific_input").show();
             } else {
@@ -346,6 +348,12 @@
           enc_json.output.dash_chunked = 'on';
       }
     }
+    if (("DASH" == enc_json.output.out_type) || ("CMAF" == enc_json.output.out_type)) {
+      enc_json.output.dash_segtimeline = 'off';
+      if (true == document.getElementsByName("dash_segtimeline")[0].checked) {
+          enc_json.output.dash_segtimeline = 'on';
+      }
+    }
 
     if ("CMAF" == enc_json.output.out_type) {
       enc_json.output.lhls = 'off';
@@ -605,6 +613,11 @@
       document.getElementsByName("dash_chunked")[0].checked = false;
       if (config.output.dash_chunked == 'on') {
           document.getElementsByName("dash_chunked")[0].checked = true;
+      }
+
+      document.getElementsByName("dash_segtimeline")[0].checked = false;
+      if (config.output.dash_segtimeline == 'on') {
+          document.getElementsByName("dash_segtimeline")[0].checked = true;
       }
 
       document.getElementsByName("lhls")[0].checked = false;
@@ -1000,6 +1013,13 @@
               <div class="form-group">
                 <div class="col-sm-offset-2 col-sm-5 checkbox">
                     <label><input type="checkbox" name="dash_chunked" id="dash_chunked" checked> Chunked HTTP output</label>
+                </div>
+              </div>
+            </span>
+            <span id="segment_timeline_input">
+              <div class="form-group">
+                <div class="col-sm-offset-2 col-sm-5 checkbox">
+                    <label><input type="checkbox" name="dash_segtimeline" id="dash_segtimeline"> Enable Segment Timeline</label>
                 </div>
               </div>
             </span>

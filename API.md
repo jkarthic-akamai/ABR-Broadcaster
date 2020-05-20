@@ -237,6 +237,14 @@ Flag to enable chunking in the mp4 segment. Each frame will be created in a MOOF
 
 *Type* : String
 
+### dash_segtimeline
+
+Flag to enable SegmentTimeline embedded in the DASH number scheme template. Applicable only when `out_type` is `DASH` or `CMAF`.
+
+*Valid Values* : `on`, `off`
+
+*Type* : String
+
 ## Input Status
 
 This section contains information about the input source. An example input status section below.

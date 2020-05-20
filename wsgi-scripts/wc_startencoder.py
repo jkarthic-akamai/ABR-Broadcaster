@@ -242,6 +242,12 @@ def validate_encoder_params(encoder_params):
             msg = ' Invalid  dash_chunked flag ' + str(encoder_params['output']['dash_chunked'])
             return False, msg
 
+    if out_type == 'DASH' or out_type == 'CMAF':
+        if (encoder_params['output']['dash_segtimeline'] != 'on') and \
+           (encoder_params['output']['dash_segtimeline'] != 'off'):
+            msg = ' Invalid  dash Segment Timeline flag ' + str(encoder_params['output']['dash_segtimeline'])
+            return False, msg
+
     if out_type == 'CMAF':
         if (encoder_params['output']['lhls'] != 'on') and \
            (encoder_params['output']['lhls'] != 'off'):
@@ -294,6 +300,7 @@ def start_encoder(enc_params):
                     "ingest_url": "",
                     "b_ingest_url":"",
                     "dash_chunked": "off",
+                    "dash_segtimeline": "off",
                     "lhls": "off",
                     "hls_master_manifest" : "master.m3u8",
                     "dash_master_manifest" : "out.mpd"
